@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -28,7 +29,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/student/dashboard';
 
     /**
      * Create a new controller instance.
@@ -41,36 +42,57 @@ class RegisterController extends Controller
     }
 
     /**
+     * Show the application registration form.
+     */
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+    /**
      * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
      */
     protected function validator(array $data)
     {
         return Validator::make($data, [
+            'student_id' => ['required', 'string', 'max:20', 'unique:users'],
             'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-        'phone_number' => ['required', 'string', 'max:15'], // Add validation rule for phone_number
-        'address' => ['required', 'string', 'max:255'], // Add validation rule for address
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone_number' => ['required', 'string', 'max:15'],
+            'address' => ['required', 'string', 'max:500'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'string', 'in:student'],
         ]);
     }
 
     /**
      * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return \App\Models\User
      */
     protected function create(array $data)
     {
         return User::create([
+            'student_id' => $data['student_id'],
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
             'phone_number' => $data['phone_number'],
             'address' => $data['address'],
+            'password' => Hash::make($data['password']),
+            'role' => 'student',
         ]);
+    }
+
+    /**
+     * Handle a registration request for the application.
+     */
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        $user = $this->create($request->all());
+
+        $this->guard()->login($user);
+
+        return $this->registered($request, $user)
+            ?: redirect($this->redirectPath());
     }
 }

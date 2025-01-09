@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::table('timetables', function (Blueprint $table) {
             //
-            $table->foreign('subject_id')->references('id')->on('subjects');
-            $table->foreign('day_id')->references('id')->on('days');
-            $table->foreign('hall_id')->references('id')->on('halls');
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('group_id')->references('id')->on('groups');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('set null');
+            $table->foreign('day_id')->references('id')->on('days')->onDelete('set null');
+            $table->foreign('hall_id')->references('id')->on('halls')->onDelete('set null');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('set null');
         });
     }
 

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('days', function (Blueprint $table) {
-            $table->increments ('id');
-            $table->string('day_name') ->nullable();
+            $table->id();
+            $table->string('day_name')->nullable();
         });
     }
 
