@@ -24,8 +24,7 @@ class DashboardController extends Controller
             'total_students' => User::where('role', 'student')->count(),
         ];
 
-        $recent_packages = Package::with('student')
-            ->orderBy('created_at', 'desc')
+        $recent_packages = Package::orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 

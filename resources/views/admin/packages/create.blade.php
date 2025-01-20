@@ -22,26 +22,28 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="student_id" class="form-label">Student</label>
-                            <select class="form-select @error('student_id') is-invalid @enderror" 
-                                id="student_id" name="student_id" required>
-                                <option value="">Select Student</option>
-                                @foreach($students as $student)
-                                    <option value="{{ $student->student_id }}" {{ old('student_id') == $student->student_id ? 'selected' : '' }}>
-                                        {{ $student->name }} ({{ $student->student_id }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('student_id')
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                id="name" name="name" value="{{ old('name') }}" required>
+                            @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label for="notes" class="form-label">Notes (Optional)</label>
-                            <textarea class="form-control @error('notes') is-invalid @enderror" 
-                                id="notes" name="notes" rows="3">{{ old('notes') }}</textarea>
-                            @error('notes')
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control @error('phone_number') is-invalid @enderror" 
+                                id="phone_number" name="phone_number" value="{{ old('phone_number') }}" required>
+                            @error('phone_number')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="delivery_date" class="form-label">Delivery Date</label>
+                            <input type="date" class="form-control @error('delivery_date') is-invalid @enderror" 
+                                id="delivery_date" name="delivery_date" value="{{ old('delivery_date', date('Y-m-d')) }}" required>
+                            @error('delivery_date')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

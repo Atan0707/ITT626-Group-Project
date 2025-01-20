@@ -6,8 +6,8 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Manage Packages</h5>
-                    <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">Add New Package</a>
+                    <h5 class="mb-0">Manage Parcels</h5>
+                    <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">Add New Parcel</a>
                 </div>
                 <div class="card-body">
                     @if(session('success'))
@@ -21,10 +21,10 @@
                             <thead>
                                 <tr>
                                     <th>Tracking Number</th>
-                                    <th>Student</th>
+                                    <th>Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Delivery Date</th>
                                     <th>Status</th>
-                                    <th>Arrival Date</th>
-                                    <th>Collection Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -32,7 +32,9 @@
                                 @forelse($packages as $package)
                                     <tr>
                                         <td>{{ $package->tracking_number }}</td>
-                                        <td>{{ $package->student->name }} ({{ $package->student->student_id }})</td>
+                                        <td>{{ $package->name }}</td>
+                                        <td>{{ $package->phone_number }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($package->delivery_date)->format('d M Y') }}</td>
                                         <td>
                                             @if($package->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
@@ -40,8 +42,6 @@
                                                 <span class="badge bg-success">Collected</span>
                                             @endif
                                         </td>
-                                        <td>{{ $package->arrival_date->format('d M Y') }}</td>
-                                        <td>{{ $package->collection_date ? $package->collection_date->format('d M Y') : '-' }}</td>
                                         <td>
                                             <div class="btn-group">
                                                 <a href="{{ route('admin.packages.edit', $package) }}" class="btn btn-sm btn-primary">Edit</a>

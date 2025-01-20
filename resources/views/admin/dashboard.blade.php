@@ -54,10 +54,10 @@
                             <thead>
                                 <tr>
                                     <th>Tracking Number</th>
-                                    <th>Student</th>
+                                    <th>Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Delivery Date</th>
                                     <th>Status</th>
-                                    <th>Arrival Date</th>
-                                    <th>Collection Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -65,7 +65,9 @@
                                 @forelse($recent_packages as $package)
                                     <tr>
                                         <td>{{ $package->tracking_number }}</td>
-                                        <td>{{ $package->student->name }} ({{ $package->student->student_id }})</td>
+                                        <td>{{ $package->name }}</td>
+                                        <td>{{ $package->phone_number }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($package->delivery_date)->format('d M Y') }}</td>
                                         <td>
                                             @if($package->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
@@ -73,16 +75,21 @@
                                                 <span class="badge bg-success">Collected</span>
                                             @endif
                                         </td>
-                                        <td>{{ $package->arrival_date->format('d M Y') }}</td>
-                                        <td>{{ $package->collection_date ? $package->collection_date->format('d M Y') : '-' }}</td>
                                         <td>
-                                            <a href="{{ route('admin.packages.edit', $package) }}" class="btn btn-sm btn-primary">Edit</a>
-                                            @if($package->status === 'pending')
-                                                <form action="{{ route('admin.packages.mark-collected', $package) }}" method="POST" class="d-inline">
+                                            <div class="btn-group">
+                                                <a href="{{ route('admin.packages.edit', $package) }}" class="btn btn-sm btn-primary">Edit</a>
+                                                @if($package->status === 'pending')
+                                                    <form action="{{ route('admin.packages.mark-collected', $package) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-success">Mark Collected</button>
+                                                    </form>
+                                                @endif
+                                                <form action="{{ route('admin.packages.destroy', $package) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this package?');">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-sm btn-success">Mark Collected</button>
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                                 </form>
-                                            @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

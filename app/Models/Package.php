@@ -11,14 +11,16 @@ class Package extends Model
 
     protected $fillable = [
         'tracking_number',
-        'student_id',
+        'name',
+        'phone_number',
+        'delivery_date',
         'status',
-        'notes',
     ];
 
     protected $casts = [
         'arrival_date' => 'datetime',
         'collection_date' => 'datetime',
+        'delivery_date' => 'date',
     ];
 
     /**

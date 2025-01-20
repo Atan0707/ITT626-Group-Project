@@ -17,8 +17,7 @@ class PackageController extends Controller
 
     public function index()
     {
-        $packages = Package::with('student')
-            ->orderBy('created_at', 'desc')
+        $packages = Package::orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.packages.index', compact('packages'));
@@ -34,8 +33,9 @@ class PackageController extends Controller
     {
         $validated = $request->validate([
             'tracking_number' => 'required|string|unique:packages',
-            'student_id' => 'required|exists:users,student_id',
-            'notes' => 'nullable|string',
+            'name' => 'required|string',
+            'phone_number' => 'required|string',
+            'delivery_date' => 'required|date',
         ]);
 
         $package = Package::create($validated);

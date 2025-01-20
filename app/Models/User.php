@@ -21,12 +21,9 @@ class User extends Authenticatable
      public $timestamps = true;
      
     protected $fillable = [
-        'student_id',
         'name',
         'email',
         'password',
-        'phone_number',
-        'address',
         'role',
     ];
 

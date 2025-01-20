@@ -14,14 +14,11 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('tracking_number')->unique();
-            $table->string('student_id');
+            $table->string('name');
+            $table->string('phone_number');
+            $table->date('delivery_date')->useCurrent();
             $table->enum('status', ['pending', 'collected'])->default('pending');
-            $table->timestamp('arrival_date')->useCurrent();
-            $table->timestamp('collection_date')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
-
-            $table->foreign('student_id')->references('student_id')->on('users')->onDelete('cascade');
         });
     }
 
