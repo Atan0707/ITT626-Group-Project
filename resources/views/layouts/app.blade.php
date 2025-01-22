@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
@@ -15,12 +15,92 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
+    <!-- Calendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100%;
+        }
+        .main-content {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            margin-top: 56px; /* Add margin for navbar */
+        }
+        #sidebar {
+            width: 250px;
+            background: #343a40;
+            color: white;
+            min-height: calc(100vh - 56px);
+            position: fixed;
+            left: 0;
+            top: 56px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        #sidebar .nav-link {
+            color: rgba(255,255,255,.75);
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 5px 15px;
+        }
+        #sidebar .nav-link:hover,
+        #sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,.1);
+        }
+        #sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        #content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            min-height: calc(100vh - 56px);
+            background: #f8f9fa;
+        }
+        .navbar {
+            height: 56px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 1030;
+            background: white;
+        }
+        .container {
+            max-width: 100% !important;
+            margin-right: 0 !important;
+            margin-left: 0 !important;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        #calendar {
+            background: white;
+            padding: 15px;
+            border-radius: 0.25rem;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
+        <!-- Navbar -->
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/admin/dashboard') }}">
+                <a class="navbar-brand" href="{{ url('/') }}">
                     {{ config('app.name', 'Laravel') }}
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
@@ -72,9 +152,48 @@
             </div>
         </nav>
 
-        <main class="py-4">
-            @yield('content')
-        </main>
+        <!-- Main Content -->
+        @auth
+            <div class="main-content">
+                <!-- Sidebar -->
+                <nav id="sidebar">
+                    <div class="p-4">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {{ Request::is('admin/dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ Request::is('admin/packages') ? 'active' : '' }}" href="{{ route('admin.packages.index') }}">
+                                    <i class="fas fa-box"></i> All Packages
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ Request::is('admin/packages/calendar/view') ? 'active' : '' }}" href="{{ route('admin.packages.calendar') }}">
+                                    <i class="fas fa-calendar-alt"></i> Package Calendar
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- Page Content -->
+                <main id="content">
+                    @yield('content')
+                </main>
+            </div>
+        @else
+            <main class="py-4">
+                @yield('content')
+            </main>
+        @endauth
     </div>
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <!-- Calendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    @stack('scripts')
 </body>
 </html>

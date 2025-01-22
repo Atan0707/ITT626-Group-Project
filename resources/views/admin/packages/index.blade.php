@@ -6,7 +6,19 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Manage Parcels</h5>
+                    <div>
+                        <h5 class="mb-0">
+                            Manage Parcels
+                            @if($filterDate)
+                                <span class="text-muted fs-6 ms-2">
+                                    Showing packages for {{ $filterDate }}
+                                    <a href="{{ route('admin.packages.index') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                        Clear filter
+                                    </a>
+                                </span>
+                            @endif
+                        </h5>
+                    </div>
                     <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">Add New Parcel</a>
                 </div>
                 <div class="card-body">
@@ -61,7 +73,13 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">No packages found</td>
+                                        <td colspan="6" class="text-center">
+                                            @if($filterDate)
+                                                No packages found for {{ $filterDate }}
+                                            @else
+                                                No packages found
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>

@@ -32,14 +32,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Students</h5>
                             <h2 class="card-text">{{ $stats['total_students'] }}</h2>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <!-- Recent Packages -->

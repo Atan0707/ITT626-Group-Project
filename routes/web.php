@@ -18,6 +18,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     // Package Management
     Route::resource('packages', PackageController::class);
     Route::post('packages/{package}/mark-collected', [PackageController::class, 'markAsCollected'])->name('packages.mark-collected');
+    Route::get('packages/calendar/view', [PackageController::class, 'calendar'])->name('packages.calendar');
+    Route::get('packages/calendar/events', [PackageController::class, 'calendarEvents'])->name('packages.calendar.events');
 });
 
 // Redirect /home to admin dashboard

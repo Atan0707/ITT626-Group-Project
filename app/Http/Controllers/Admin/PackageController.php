@@ -15,12 +15,21 @@ class PackageController extends Controller
         $this->middleware('admin');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $packages = Package::orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = Package::orderBy('created_at', 'desc');
 
-        return view('admin.packages.index', compact('packages'));
+        // If date is provided, filter packages for that date
+        if ($request->has('date')) {
+            $query->whereDate('delivery_date', $request->date);
+        }
+
+        $packages = $query->paginate(10);
+
+        // If date is provided, add it to the view data
+        $filterDate = $request->date ? \Carbon\Carbon::parse($request->date)->format('d M Y') : null;
+
+        return view('admin.packages.index', compact('packages', 'filterDate'));
     }
 
     public function create()
@@ -78,5 +87,53 @@ class PackageController extends Controller
 
         return redirect()->back()
             ->with('success', 'Package marked as collected.');
+    }
+
+    public function calendar(Request $request)
+    {
+        try {
+            $query = Package::selectRaw('delivery_date, COUNT(*) as count')
+                ->whereNotNull('delivery_date');
+
+            // If month is selected, filter by that month
+            if ($request->has('month')) {
+                $date = \Carbon\Carbon::parse($request->month);
+                $query->whereYear('delivery_date', $date->year)
+                      ->whereMonth('delivery_date', $date->month);
+            }
+
+            $dates = $query->groupBy('delivery_date')
+                          ->orderBy('delivery_date', 'desc')
+                          ->get();
+
+            // Get list of months with packages for the dropdown
+            $months = Package::selectRaw('DATE_FORMAT(delivery_date, "%Y-%m") as month')
+                ->whereNotNull('delivery_date')
+                ->groupBy('month')
+                ->orderBy('month', 'desc')
+                ->get()
+                ->map(function($item) {
+                    $date = \Carbon\Carbon::parse($item->month);
+                    return [
+                        'value' => $date->format('Y-m'),
+                        'label' => $date->format('F Y')
+                    ];
+                });
+
+            $selectedMonth = $request->month;
+
+            return view('admin.packages.calendar', compact('dates', 'months', 'selectedMonth'));
+        } catch (\Exception $e) {
+            return view('admin.packages.calendar', [
+                'dates' => collect([]),
+                'months' => collect([]),
+                'selectedMonth' => null
+            ]);
+        }
+    }
+
+    public function calendarEvents()
+    {
+        return response()->json([]);
     }
 }
