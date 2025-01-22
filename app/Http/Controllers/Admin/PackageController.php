@@ -24,8 +24,9 @@ class PackageController extends Controller
             $query->whereDate('delivery_date', $request->date);
         }
 
-        // Get all packages sorted by delivery date
+        // Get all packages sorted by delivery date and daily number
         $packages = $query->orderBy('delivery_date', 'desc')
+                         ->orderBy('daily_number', 'asc')
                          ->get()
                          ->groupBy(function($package) {
                              return $package->delivery_date->format('Y-m-d');
@@ -40,10 +41,8 @@ class PackageController extends Controller
                 'date' => $date
             ]);
 
-            // Add packages with daily numbers
-            $counter = 1;
+            // Add packages (daily number is now from database)
             foreach ($dayPackages as $package) {
-                $package->dailyNumber = $counter++;
                 $processedPackages->push($package);
             }
         }
@@ -103,10 +102,14 @@ class PackageController extends Controller
             'delivery_date' => 'required|date',
         ]);
 
-        // Get count for the delivery date
+        // Get next daily number for the delivery date
         $deliveryDate = \Carbon\Carbon::parse($validated['delivery_date'])->format('Y-m-d');
-        $dayCount = Package::whereDate('delivery_date', $deliveryDate)->count();
-        $dailyNumber = $dayCount + 1;
+        $maxDailyNumber = Package::whereDate('delivery_date', $deliveryDate)
+            ->max('daily_number') ?? 0;
+        $dailyNumber = $maxDailyNumber + 1;
+
+        // Add daily number to validated data
+        $validated['daily_number'] = $dailyNumber;
 
         $package = Package::create($validated);
 

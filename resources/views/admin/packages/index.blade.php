@@ -51,7 +51,7 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th style="width: 80px">Daily #</th>
+                                    <th style="width: 80px">No #</th>
                                     <th>Tracking Number</th>
                                     <th>Name</th>
                                     <th>Phone Number</th>
@@ -70,7 +70,7 @@
                                         </tr>
                                     @else
                                         <tr>
-                                            <td class="text-center fw-bold">#{{ $item->dailyNumber }}</td>
+                                            <td class="text-center fw-bold">#{{ $item->daily_number }}</td>
                                             <td>{{ $item->tracking_number }}</td>
                                             <td>{{ $item->name }}</td>
                                             <td>{{ $item->phone_number }}</td>

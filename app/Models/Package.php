@@ -14,6 +14,7 @@ class Package extends Model
         'name',
         'phone_number',
         'delivery_date',
+        'daily_number',
         'status',
     ];
 
