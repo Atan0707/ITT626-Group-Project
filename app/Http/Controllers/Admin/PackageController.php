@@ -17,31 +17,43 @@ class PackageController extends Controller
 
     public function index(Request $request)
     {
-        $query = Package::orderBy('created_at', 'desc');
+        $query = Package::query();
 
         // If date is provided, filter packages for that date
         if ($request->has('date')) {
             $query->whereDate('delivery_date', $request->date);
         }
 
-        $packages = $query->get();
+        // Get all packages sorted by delivery date
+        $packages = $query->orderBy('delivery_date', 'desc')
+                         ->get()
+                         ->groupBy(function($package) {
+                             return $package->delivery_date->format('Y-m-d');
+                         });
 
-        // Group packages by created_at date and assign daily numbers
-        $packages = $packages->map(function($package) {
-            $createdDate = $package->created_at->format('Y-m-d');
-            $dailyNumber = Package::whereDate('created_at', $createdDate)
-                ->where('created_at', '<=', $package->created_at)
-                ->count();
-            $package->dailyNumber = $dailyNumber;
-            return $package;
-        });
+        // Process each day's packages
+        $processedPackages = collect();
+        foreach ($packages as $date => $dayPackages) {
+            // Add date header
+            $processedPackages->push((object)[
+                'is_date_header' => true,
+                'date' => $date
+            ]);
+
+            // Add packages with daily numbers
+            $counter = 1;
+            foreach ($dayPackages as $package) {
+                $package->dailyNumber = $counter++;
+                $processedPackages->push($package);
+            }
+        }
 
         // Paginate after processing
         $perPage = 10;
         $page = request()->get('page', 1);
         $packages = new \Illuminate\Pagination\LengthAwarePaginator(
-            $packages->forPage($page, $perPage),
-            $packages->count(),
+            $processedPackages->forPage($page, $perPage),
+            $processedPackages->count(),
             $perPage,
             $page,
             ['path' => request()->url(), 'query' => request()->query()]
@@ -68,10 +80,10 @@ class PackageController extends Controller
             'delivery_date' => 'required|date',
         ]);
 
-        // Get today's count for sorting number
-        $today = now()->format('Y-m-d');
-        $todayCount = Package::whereDate('created_at', $today)->count();
-        $dailyNumber = $todayCount + 1;
+        // Get count for the delivery date
+        $deliveryDate = \Carbon\Carbon::parse($validated['delivery_date'])->format('Y-m-d');
+        $dayCount = Package::whereDate('delivery_date', $deliveryDate)->count();
+        $dailyNumber = $dayCount + 1;
 
         $package = Package::create($validated);
 
@@ -82,16 +94,16 @@ class PackageController extends Controller
 
     public function edit(Package $package)
     {
-        $students = User::where('role', 'student')->get();
-        return view('admin.packages.edit', compact('package', 'students'));
+        return view('admin.packages.edit', compact('package'));
     }
 
     public function update(Request $request, Package $package)
     {
         $validated = $request->validate([
             'tracking_number' => 'required|string|unique:packages,tracking_number,' . $package->id,
-            'student_id' => 'required|exists:users,student_id',
-            'notes' => 'nullable|string',
+            'name' => 'required|string',
+            'phone_number' => 'required|string',
+            'delivery_date' => 'required|date',
         ]);
 
         $package->update($validated);

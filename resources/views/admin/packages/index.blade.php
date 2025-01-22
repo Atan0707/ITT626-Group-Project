@@ -42,52 +42,45 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $currentDate = null;
-                                @endphp
-                                @forelse($packages as $package)
-                                    @php
-                                        $packageDate = $package->created_at->format('Y-m-d');
-                                        $showDate = $currentDate !== $packageDate;
-                                        $currentDate = $packageDate;
-                                    @endphp
-                                    @if($showDate)
+                                @forelse($packages as $item)
+                                    @if(isset($item->is_date_header) && $item->is_date_header)
                                         <tr class="table-light">
                                             <td colspan="7" class="fw-bold">
-                                                {{ $package->created_at->format('d M Y') }}
+                                                {{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}
+                                            </td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <td class="text-center fw-bold">#{{ $item->dailyNumber }}</td>
+                                            <td>{{ $item->tracking_number }}</td>
+                                            <td>{{ $item->name }}</td>
+                                            <td>{{ $item->phone_number }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->delivery_date)->format('d M Y') }}</td>
+                                            <td>
+                                                @if($item->status === 'pending')
+                                                    <span class="badge bg-warning">Pending</span>
+                                                @else
+                                                    <span class="badge bg-success">Collected</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ route('admin.packages.edit', $item) }}" class="btn btn-sm btn-primary">Edit</a>
+                                                    @if($item->status === 'pending')
+                                                        <form action="{{ route('admin.packages.mark-collected', $item) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-success">Mark Collected</button>
+                                                        </form>
+                                                    @endif
+                                                    <form action="{{ route('admin.packages.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this package?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endif
-                                    <tr>
-                                        <td class="text-center fw-bold">#{{ $package->dailyNumber }}</td>
-                                        <td>{{ $package->tracking_number }}</td>
-                                        <td>{{ $package->name }}</td>
-                                        <td>{{ $package->phone_number }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($package->delivery_date)->format('d M Y') }}</td>
-                                        <td>
-                                            @if($package->status === 'pending')
-                                                <span class="badge bg-warning">Pending</span>
-                                            @else
-                                                <span class="badge bg-success">Collected</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ route('admin.packages.edit', $package) }}" class="btn btn-sm btn-primary">Edit</a>
-                                                @if($package->status === 'pending')
-                                                    <form action="{{ route('admin.packages.mark-collected', $package) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-success">Mark Collected</button>
-                                                    </form>
-                                                @endif
-                                                <form action="{{ route('admin.packages.destroy', $package) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this package?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
                                 @empty
                                     <tr>
                                         <td colspan="7" class="text-center">
