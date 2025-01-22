@@ -32,6 +32,7 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
+                                    <th style="width: 80px">Daily #</th>
                                     <th>Tracking Number</th>
                                     <th>Name</th>
                                     <th>Phone Number</th>
@@ -41,8 +42,24 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $currentDate = null;
+                                @endphp
                                 @forelse($packages as $package)
+                                    @php
+                                        $packageDate = $package->created_at->format('Y-m-d');
+                                        $showDate = $currentDate !== $packageDate;
+                                        $currentDate = $packageDate;
+                                    @endphp
+                                    @if($showDate)
+                                        <tr class="table-light">
+                                            <td colspan="7" class="fw-bold">
+                                                {{ $package->created_at->format('d M Y') }}
+                                            </td>
+                                        </tr>
+                                    @endif
                                     <tr>
+                                        <td class="text-center fw-bold">#{{ $package->dailyNumber }}</td>
                                         <td>{{ $package->tracking_number }}</td>
                                         <td>{{ $package->name }}</td>
                                         <td>{{ $package->phone_number }}</td>
@@ -73,7 +90,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">
+                                        <td colspan="7" class="text-center">
                                             @if($filterDate)
                                                 No packages found for {{ $filterDate }}
                                             @else
@@ -94,4 +111,39 @@
         </div>
     </div>
 </div>
+
+@if(session('success'))
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Package Added Successfully</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <h4 class="mb-3">{{ session('success') }}</h4>
+                    @if(session('dailyNumber'))
+                        <div class="alert alert-info">
+                            <strong>Today's sorting number: #{{ session('dailyNumber') }}</strong>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('successModal'));
+    modal.show();
+});
+</script>
+@endif
+
 @endsection 

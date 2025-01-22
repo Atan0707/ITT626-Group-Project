@@ -24,7 +24,28 @@ class PackageController extends Controller
             $query->whereDate('delivery_date', $request->date);
         }
 
-        $packages = $query->paginate(10);
+        $packages = $query->get();
+
+        // Group packages by created_at date and assign daily numbers
+        $packages = $packages->map(function($package) {
+            $createdDate = $package->created_at->format('Y-m-d');
+            $dailyNumber = Package::whereDate('created_at', $createdDate)
+                ->where('created_at', '<=', $package->created_at)
+                ->count();
+            $package->dailyNumber = $dailyNumber;
+            return $package;
+        });
+
+        // Paginate after processing
+        $perPage = 10;
+        $page = request()->get('page', 1);
+        $packages = new \Illuminate\Pagination\LengthAwarePaginator(
+            $packages->forPage($page, $perPage),
+            $packages->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         // If date is provided, add it to the view data
         $filterDate = $request->date ? \Carbon\Carbon::parse($request->date)->format('d M Y') : null;
@@ -47,10 +68,16 @@ class PackageController extends Controller
             'delivery_date' => 'required|date',
         ]);
 
+        // Get today's count for sorting number
+        $today = now()->format('Y-m-d');
+        $todayCount = Package::whereDate('created_at', $today)->count();
+        $dailyNumber = $todayCount + 1;
+
         $package = Package::create($validated);
 
         return redirect()->route('admin.packages.index')
-            ->with('success', 'Package created successfully.');
+            ->with('success', 'Package added. Please label the parcel by #' . $dailyNumber)
+            ->with('dailyNumber', $dailyNumber);
     }
 
     public function edit(Package $package)

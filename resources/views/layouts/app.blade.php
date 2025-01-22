@@ -171,7 +171,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ Request::is('admin/packages/calendar/view') ? 'active' : '' }}" href="{{ route('admin.packages.calendar') }}">
-                                    <i class="fas fa-calendar-alt"></i> Package Calendar
+                                    <i class="fas fa-calendar-alt"></i> View By Dates
                                 </a>
                             </li>
                         </ul>
