@@ -166,7 +166,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ Request::is('admin/packages') ? 'active' : '' }}" href="{{ route('admin.packages.index') }}">
-                                    <i class="fas fa-box"></i> All Packages
+                                    <i class="fas fa-box"></i> View All Parcels
                                 </a>
                             </li>
                             <li class="nav-item">

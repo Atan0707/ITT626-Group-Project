@@ -95,12 +95,11 @@ class PackageController extends Controller
             $query = Package::selectRaw('delivery_date, COUNT(*) as count')
                 ->whereNotNull('delivery_date');
 
-            // If month is selected, filter by that month
-            if ($request->has('month')) {
-                $date = \Carbon\Carbon::parse($request->month);
-                $query->whereYear('delivery_date', $date->year)
-                      ->whereMonth('delivery_date', $date->month);
-            }
+            // Set default month to current month
+            $selectedMonth = $request->month ?? now()->format('Y-m');
+            $date = \Carbon\Carbon::parse($selectedMonth);
+            $query->whereYear('delivery_date', $date->year)
+                  ->whereMonth('delivery_date', $date->month);
 
             $dates = $query->groupBy('delivery_date')
                           ->orderBy('delivery_date', 'desc')
@@ -119,8 +118,6 @@ class PackageController extends Controller
                         'label' => $date->format('F Y')
                     ];
                 });
-
-            $selectedMonth = $request->month;
 
             return view('admin.packages.calendar', compact('dates', 'months', 'selectedMonth'));
         } catch (\Exception $e) {
