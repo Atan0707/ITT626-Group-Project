@@ -1,6 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    /* Custom pagination styling */
+    .pagination {
+        margin-bottom: 0;
+    }
+    .pagination .page-link {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .pagination-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+</style>
+
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
@@ -8,7 +27,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-0">
-                            Manage Parcels
+                            All Parcels
                             @if($filterDate)
                                 <span class="text-muted fs-6 ms-2">
                                     Showing packages for {{ $filterDate }}
@@ -96,9 +115,30 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
-                        {{ $packages->links() }}
-                    </div>
+                    @if($packages->hasPages())
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="pagination-text">
+                                @if($packages->total() > 0)
+                                    @php
+                                        $actualCount = $packages->filter(function($item) {
+                                            return !isset($item->is_date_header);
+                                        })->count();
+                                        $totalCount = $packages->total() - $packages->filter(function($item) {
+                                            return isset($item->is_date_header);
+                                        })->count();
+                                    @endphp
+                                    Showing {{ max(1, $actualCount) }} to {{ min($totalCount, $packages->perPage()) }} of {{ $totalCount }} packages
+                                @else
+                                    No packages found
+                                @endif
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <nav>
+                                    {{ $packages->links('pagination::bootstrap-4') }}
+                                </nav>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

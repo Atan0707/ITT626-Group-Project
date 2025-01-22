@@ -48,11 +48,34 @@ class PackageController extends Controller
             }
         }
 
-        // Paginate after processing
-        $perPage = 10;
+        // Calculate pagination
+        $perPage = 15; // Increased to account for date headers
         $page = request()->get('page', 1);
+        
+        // Get the slice of items for the current page
+        $items = $processedPackages->forPage($page, $perPage);
+        
+        // Count actual packages (excluding headers) in the current page
+        $actualPackagesInPage = $items->filter(function($item) {
+            return !isset($item->is_date_header);
+        })->count();
+        
+        // If we have less than 10 actual packages and there are more items available,
+        // increase the per page count to try to get more packages
+        while ($actualPackagesInPage < 10 && $items->count() < $processedPackages->count()) {
+            $perPage += 5;
+            $items = $processedPackages->forPage($page, $perPage);
+            $actualPackagesInPage = $items->filter(function($item) {
+                return !isset($item->is_date_header);
+            })->count();
+            
+            // Safety check to prevent infinite loop
+            if ($perPage > 50) break;
+        }
+
+        // Create paginator with adjusted items
         $packages = new \Illuminate\Pagination\LengthAwarePaginator(
-            $processedPackages->forPage($page, $perPage),
+            $items,
             $processedPackages->count(),
             $perPage,
             $page,
