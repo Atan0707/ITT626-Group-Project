@@ -22,6 +22,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('packages/calendar/events', [PackageController::class, 'calendarEvents'])->name('packages.calendar.events');
     Route::get('packages/bulk/create', [PackageController::class, 'bulkCreate'])->name('packages.bulk-create');
     Route::post('packages/bulk-store', [PackageController::class, 'bulkStore'])->name('packages.bulk-store');
+    Route::get('packages/print/{date}', [PackageController::class, 'printView'])->name('packages.print');
 });
 
 // Redirect /home to admin dashboard

@@ -34,6 +34,9 @@
                                     <a href="{{ route('admin.packages.index') }}" class="btn btn-sm btn-outline-secondary ms-2">
                                         Clear filter
                                     </a>
+                                    <a href="{{ route('admin.packages.print', ['date' => request('date')]) }}" class="btn btn-sm btn-outline-primary ms-2" target="_blank">
+                                        Print List
+                                    </a>
                                 </span>
                             @endif
                         </h5>

@@ -235,6 +235,19 @@ class PackageController extends Controller
         return response()->json([]);
     }
 
+    public function printView($date)
+    {
+        // Get packages for the specified date
+        $packages = Package::whereDate('delivery_date', $date)
+            ->orderBy('daily_number', 'asc')
+            ->get();
+
+        // Format the date for display
+        $formattedDate = \Carbon\Carbon::parse($date)->format('d M Y');
+
+        return view('admin.packages.print', compact('packages', 'formattedDate'));
+    }
+
     public function bulkCreate()
     {
         return view('admin.packages.bulk-create');
