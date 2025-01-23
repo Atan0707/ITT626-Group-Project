@@ -25,7 +25,7 @@ class TelegramService
     public function sendPackageNotification(Package $package)
     {
         try {
-            $expiryDate = Carbon::parse($package->delivery_date)->addWeek()->format('d/m/Y');
+            $expiryDate = Carbon::now()->addWeek()->format('d/m/Y');
             $deliveryDate = Carbon::parse($package->delivery_date)->format('d/m/Y');
             
             $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at Tanjung and is ready for pickup. Please show the reference number to the staff. \n\nReference number: **{$deliveryDate} #{$package->daily_number}** ";

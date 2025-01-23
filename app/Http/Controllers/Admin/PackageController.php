@@ -230,8 +230,9 @@ class PackageController extends Controller
 
         $successCount = 0;
         $errors = [];
+        $dailyNumbers = [];
 
-        \DB::transaction(function () use ($request, &$successCount, &$errors) {
+        DB::transaction(function () use ($request, &$successCount, &$errors, &$dailyNumbers) {
             foreach ($request->packages as $index => $packageData) {
                 try {
                     // Get next daily number for the delivery date
@@ -249,6 +250,13 @@ class PackageController extends Controller
                         'daily_number' => $dailyNumber
                     ]);
 
+                    // Store daily number for success message
+                    $dailyNumbers[] = [
+                        'date' => $deliveryDate,
+                        'number' => $dailyNumber,
+                        'tracking' => $packageData['tracking_number']
+                    ];
+
                     // Send Telegram notification
                     try {
                         $this->telegramService->sendPackageNotification($package);
@@ -264,9 +272,21 @@ class PackageController extends Controller
         });
 
         if ($successCount > 0) {
-            $message = $successCount . ' package(s) added successfully.';
+            // Group daily numbers by date
+            $groupedNumbers = collect($dailyNumbers)->groupBy('date')->map(function($items) {
+                return $items->map(function($item) {
+                    return "#{$item['number']} ({$item['tracking']})";
+                })->join(', ');
+            });
+
+            $message = $successCount . ' package(s) added successfully.<br><br>';
+            $message .= '<strong>Assigned Daily Numbers:</strong><br>';
+            foreach ($groupedNumbers as $date => $numbers) {
+                $message .= \Carbon\Carbon::parse($date)->format('d M Y') . ': ' . $numbers . '<br>';
+            }
+
             if (!empty($errors)) {
-                $message .= ' However, there were some errors: ' . implode(', ', $errors);
+                $message .= '<br><strong>Errors:</strong><br>' . implode('<br>', $errors);
                 return redirect()->route('admin.packages.bulk-create')
                     ->with('warning', $message);
             }
@@ -275,6 +295,6 @@ class PackageController extends Controller
         }
 
         return redirect()->route('admin.packages.bulk-create')
-            ->with('error', 'Failed to add packages. ' . implode(', ', $errors));
+            ->with('error', 'Failed to add packages. ' . implode('<br>', $errors));
     }
 }

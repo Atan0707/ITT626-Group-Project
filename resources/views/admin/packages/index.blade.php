@@ -46,7 +46,7 @@
                 <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success">
-                            {{ session('success') }}
+                            {!! session('success') !!}
                         </div>
                     @endif
 
@@ -159,7 +159,7 @@
             </div>
             <div class="modal-body">
                 <div class="text-center">
-                    <h4 class="mb-3">{{ session('success') }}</h4>
+                    <h4 class="mb-3">{!! session('success') !!}</h4>
                     @if(session('dailyNumber'))
                         <div class="alert alert-info">
                             <strong>Today's sorting number: #{{ session('dailyNumber') }}</strong>
