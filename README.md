@@ -55,3 +55,10 @@ This is a Laravel project that requires a local development environment. Follow 
    ```bash
    npm run dev
    ```
+
+8. **Run the Node.js Server**
+   Start the Node.js server:
+   ```bash
+   cd server
+   npx nodemon server.js
+   ```
