@@ -41,7 +41,7 @@ This is a Laravel project that requires a local development environment. Follow 
 5. **Run Migrations**
    If your project requires a database schema, run the migrations:
    ```bash
-   php artisan migrate
+   php artisan migrate:fresh --seed
    ```
 
 6. **Install Frontend Dependencies**
