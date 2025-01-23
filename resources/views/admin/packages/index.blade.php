@@ -86,7 +86,7 @@
                                                 <div class="btn-group">
                                                     <a href="{{ route('admin.packages.edit', $item) }}" class="btn btn-sm btn-primary">Edit</a>
                                                     @if($item->status === 'pending')
-                                                        <form action="{{ route('admin.packages.mark-collected', $item) }}" method="POST" class="d-inline">
+                                                        <form action="{{ route('admin.packages.mark-collected', $item) }}" method="POST" class="d-inline" onsubmit="sendCollectionMessage(event, '{{ $item->phone_number }}', '{{ $item->name }}', '{{ $item->tracking_number }}');">
                                                             @csrf
                                                             <button type="submit" class="btn btn-sm btn-success">Mark Collected</button>
                                                         </form>
@@ -176,6 +176,39 @@ document.addEventListener('DOMContentLoaded', function() {
     var modal = new bootstrap.Modal(document.getElementById('successModal'));
     modal.show();
 });
+
+async function sendCollectionMessage(event, phoneNumber, name, trackingNumber) {
+    if (!confirm('Are you sure you want to mark this package as collected?')) {
+        event.preventDefault();
+        return;
+    }
+
+    try {
+        // Format phone number to include +60 if it doesn't already
+        const formattedPhone = phoneNumber.startsWith('+60') ? phoneNumber : '+60' + phoneNumber.replace(/^0+/, '');
+        
+        // Prepare message
+        const message = `Dear ${name},\n\nYour parcel with tracking number ${trackingNumber} has been collected.\n\nThank you for using our service!`;
+
+        // Send message via the Node.js server
+        const response = await fetch('http://localhost:3000/receive-parcel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                phoneNumber: formattedPhone,
+                message: message
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Failed to send Telegram message');
+        }
+    } catch (error) {
+        console.error('Error sending Telegram message:', error);
+    }
+}
 </script>
 @endif
 
