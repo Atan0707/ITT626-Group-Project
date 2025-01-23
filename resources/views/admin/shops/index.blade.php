@@ -29,7 +29,7 @@
                                 <td>{{ $shop->name }}</td>
                                 <td>{{ $shop->address }}</td>
                                 <td>
-                                    <span class="badge badge-{{ $shop->is_active ? 'success' : 'danger' }}">
+                                    <span class="badge bg-{{ $shop->is_active ? 'success' : 'danger' }}">
                                         {{ $shop->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
