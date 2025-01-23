@@ -6,13 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\TelegramService;
+use Illuminate\Support\Facades\Log;
 
 class PackageController extends Controller
 {
-    public function __construct()
+    protected $telegramService;
+
+    public function __construct(TelegramService $telegramService)
     {
         $this->middleware('auth');
         $this->middleware('admin');
+        $this->telegramService = $telegramService;
     }
 
     public function index(Request $request)
@@ -112,6 +117,14 @@ class PackageController extends Controller
         $validated['daily_number'] = $dailyNumber;
 
         $package = Package::create($validated);
+
+        // Send Telegram notification
+        try {
+            $this->telegramService->sendPackageNotification($package);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send Telegram notification: ' . $e->getMessage());
+            // Continue execution even if notification fails
+        }
 
         return redirect()->route('admin.packages.index')
             ->with('success', 'Package added. Please label the parcel by #' . $dailyNumber)
