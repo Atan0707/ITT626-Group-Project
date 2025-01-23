@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\Shop;
 
 class PackageController extends Controller
 {
@@ -128,16 +129,22 @@ class PackageController extends Controller
             'name' => 'required|string',
             'phone_number' => 'required|string',
             'delivery_date' => 'required|date',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
         ]);
 
-        // Get next daily number for the delivery date
+        // Find nearest shop
+        $nearestShop = Shop::findNearestShop($validated['latitude'], $validated['longitude']);
+        
+        if ($nearestShop) {
+            $validated['shop_id'] = $nearestShop->id;
+        }
+
+        // Get next daily number
         $deliveryDate = \Carbon\Carbon::parse($validated['delivery_date'])->format('Y-m-d');
         $maxDailyNumber = Package::whereDate('delivery_date', $deliveryDate)
             ->max('daily_number') ?? 0;
-        $dailyNumber = $maxDailyNumber + 1;
-
-        // Add daily number to validated data
-        $validated['daily_number'] = $dailyNumber;
+        $validated['daily_number'] = $maxDailyNumber + 1;
 
         $package = Package::create($validated);
 
@@ -150,8 +157,8 @@ class PackageController extends Controller
         }
 
         return redirect()->route('admin.packages.index')
-            ->with('success', 'Package added. Please label the parcel by #' . $dailyNumber)
-            ->with('dailyNumber', $dailyNumber);
+            ->with('success', 'Package added. Please label the parcel by #' . $package->daily_number)
+            ->with('dailyNumber', $package->daily_number);
     }
 
     public function edit(Package $package)

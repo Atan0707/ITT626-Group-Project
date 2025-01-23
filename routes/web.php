@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\ShopController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,6 +24,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('packages/bulk/create', [PackageController::class, 'bulkCreate'])->name('packages.bulk-create');
     Route::post('packages/bulk-store', [PackageController::class, 'bulkStore'])->name('packages.bulk-store');
     Route::get('packages/print/{date}', [PackageController::class, 'printView'])->name('packages.print');
+    Route::resource('shops', ShopController::class);
 });
 
 // Redirect /home to admin dashboard
