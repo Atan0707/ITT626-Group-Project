@@ -64,7 +64,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($packages as $item)
+                                @forelse($paginatedPackages as $item)
                                     @if(isset($item->is_date_header) && $item->is_date_header)
                                         <tr class="table-light">
                                             <td colspan="7" class="fw-bold">
@@ -118,27 +118,25 @@
                         </table>
                     </div>
 
-                    @if($packages->hasPages())
+                    @if($paginatedPackages->hasPages() && !$filterDate)
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <div class="pagination-text">
-                                @if($packages->total() > 0)
-                                    @php
-                                        $actualCount = $packages->filter(function($item) {
-                                            return !isset($item->is_date_header);
-                                        })->count();
-                                        $totalCount = $packages->total() - $packages->filter(function($item) {
-                                            return isset($item->is_date_header);
-                                        })->count();
-                                    @endphp
-                                    Showing {{ max(1, $actualCount) }} to {{ min($totalCount, $packages->perPage()) }} of {{ $totalCount }} packages
-                                @else
-                                    No packages found
-                                @endif
+                                @php
+                                    $from = ($paginatedPackages->currentPage() - 1) * $paginatedPackages->perPage() + 1;
+                                    $to = min($from + $paginatedPackages->perPage() - 1, $paginatedPackages->total());
+                                @endphp
+                                Showing {{ $from }} to {{ $to }} of {{ $paginatedPackages->total() }} packages
                             </div>
                             <div class="d-flex align-items-center">
                                 <nav>
-                                    {{ $packages->links('pagination::bootstrap-4') }}
+                                    {{ $paginatedPackages->links('pagination::bootstrap-4') }}
                                 </nav>
+                            </div>
+                        </div>
+                    @elseif(!$filterDate)
+                        <div class="d-flex justify-content-end align-items-center mt-4">
+                            <div class="pagination-text">
+                                Showing {{ $paginatedPackages->total() }} packages
                             </div>
                         </div>
                     @endif

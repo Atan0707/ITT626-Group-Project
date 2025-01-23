@@ -25,72 +25,94 @@ class PackageController extends Controller
     {
         $query = Package::query();
 
-        // If date is provided, filter packages for that date
+        // If date is provided, get all packages for that date without pagination
         if ($request->has('date')) {
             $query->whereDate('delivery_date', $request->date);
-        }
+            $packages = $query->orderBy('delivery_date', 'desc')
+                            ->orderBy('daily_number', 'asc')
+                            ->get();
 
-        // Get all packages sorted by delivery date and daily number
-        $packages = $query->orderBy('delivery_date', 'desc')
-                         ->orderBy('daily_number', 'asc')
-                         ->get()
-                         ->groupBy(function($package) {
-                             return $package->delivery_date->format('Y-m-d');
-                         });
+            // Group packages by date
+            $groupedPackages = $packages->groupBy(function($package) {
+                return $package->delivery_date->format('Y-m-d');
+            });
 
-        // Process each day's packages
-        $processedPackages = collect();
-        foreach ($packages as $date => $dayPackages) {
-            // Add date header
-            $processedPackages->push((object)[
-                'is_date_header' => true,
-                'date' => $date
-            ]);
+            // Process each day's packages
+            $processedPackages = collect();
+            foreach ($groupedPackages as $date => $dayPackages) {
+                // Add date header
+                $processedPackages->push((object)[
+                    'is_date_header' => true,
+                    'date' => $date
+                ]);
 
-            // Add packages (daily number is now from database)
-            foreach ($dayPackages as $package) {
-                $processedPackages->push($package);
+                // Add packages
+                foreach ($dayPackages as $package) {
+                    $processedPackages->push($package);
+                }
             }
-        }
 
-        // Calculate pagination
-        $perPage = 15; // Increased to account for date headers
-        $page = request()->get('page', 1);
-        
-        // Get the slice of items for the current page
-        $items = $processedPackages->forPage($page, $perPage);
-        
-        // Count actual packages (excluding headers) in the current page
-        $actualPackagesInPage = $items->filter(function($item) {
-            return !isset($item->is_date_header);
-        })->count();
-        
-        // If we have less than 10 actual packages and there are more items available,
-        // increase the per page count to try to get more packages
-        while ($actualPackagesInPage < 10 && $items->count() < $processedPackages->count()) {
-            $perPage += 5;
-            $items = $processedPackages->forPage($page, $perPage);
-            $actualPackagesInPage = $items->filter(function($item) {
-                return !isset($item->is_date_header);
-            })->count();
+            // Create a simple paginator with all items on one page
+            $paginatedPackages = new \Illuminate\Pagination\LengthAwarePaginator(
+                $processedPackages,
+                $packages->count(),
+                $packages->count() > 0 ? $packages->count() : 1,
+                1,
+                [
+                    'path' => request()->url(),
+                    'query' => request()->query()
+                ]
+            );
+        } else {
+            // Normal pagination for unfiltered view
+            $perPage = 10;
+            $page = request()->get('page', 1);
             
-            // Safety check to prevent infinite loop
-            if ($perPage > 50) break;
-        }
+            // Get total count before processing
+            $totalPackages = $query->count();
 
-        // Create paginator with adjusted items
-        $packages = new \Illuminate\Pagination\LengthAwarePaginator(
-            $items,
-            $processedPackages->count(),
-            $perPage,
-            $page,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
+            // Get packages for the current page
+            $packages = $query->orderBy('delivery_date', 'desc')
+                            ->orderBy('daily_number', 'asc')
+                            ->paginate($perPage);
+
+            // Group packages by date
+            $groupedPackages = $packages->groupBy(function($package) {
+                return $package->delivery_date->format('Y-m-d');
+            });
+
+            // Process each day's packages
+            $processedPackages = collect();
+            foreach ($groupedPackages as $date => $dayPackages) {
+                // Add date header
+                $processedPackages->push((object)[
+                    'is_date_header' => true,
+                    'date' => $date
+                ]);
+
+                // Add packages
+                foreach ($dayPackages as $package) {
+                    $processedPackages->push($package);
+                }
+            }
+
+            // Create paginator with processed items
+            $paginatedPackages = new \Illuminate\Pagination\LengthAwarePaginator(
+                $processedPackages,
+                $totalPackages,
+                $perPage,
+                $page,
+                [
+                    'path' => request()->url(),
+                    'query' => request()->query()
+                ]
+            );
+        }
 
         // If date is provided, add it to the view data
         $filterDate = $request->date ? \Carbon\Carbon::parse($request->date)->format('d M Y') : null;
 
-        return view('admin.packages.index', compact('packages', 'filterDate'));
+        return view('admin.packages.index', compact('paginatedPackages', 'filterDate'));
     }
 
     public function create()
