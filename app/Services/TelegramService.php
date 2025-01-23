@@ -27,7 +27,7 @@ class TelegramService
         try {
             $expiryDate = Carbon::parse($package->delivery_date)->addWeek()->format('d/m/Y');
             
-            $message = "Hi {$package->name}. \n\nYour parcel {$package->tracking_number} has been received at Tanjung and is ready for pickup. ";
+            $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at Tanjung and is ready for pickup. ";
             $message .= "\n\nPlease collect it before **{$expiryDate}** to avoid the item being discarded. Thank you.";
 
             // Format phone number by adding +6 prefix if not already present
@@ -37,7 +37,7 @@ class TelegramService
             }
 
             // Make HTTP POST request to Node.js server
-            $response = Http::post('http://localhost:3000/send-message', [
+            $response = Http::post('http://localhost:3000/receive-parcel', [
                 'phoneNumber' => $phoneNumber,
                 'message' => $message
             ]);

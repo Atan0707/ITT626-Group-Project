@@ -31,7 +31,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <label for="phone_number" class="form-label">Phone Number (e.g. 0123456789)</label>
                             <input type="tel" class="form-control @error('phone_number') is-invalid @enderror" 
                                 id="phone_number" name="phone_number" value="{{ old('phone_number') }}" required>
                             @error('phone_number')

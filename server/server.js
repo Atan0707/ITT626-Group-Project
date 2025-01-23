@@ -34,8 +34,8 @@ const client = new TelegramClient(stringSession, apiId, apiHash, {
   }
 })();
 
-// API endpoint to send messages
-app.post('/send-message', async (req, res) => {
+// API endpoint to send messages after adding parcel to database
+app.post('/receive-parcel', async (req, res) => {
   try {
     const { phoneNumber, message } = req.body;
     
@@ -44,8 +44,8 @@ app.post('/send-message', async (req, res) => {
     }
 
     // Validate phone number format
-    if (!phoneNumber.startsWith('+6')) {
-      return res.status(400).json({ error: 'Phone number must start with +6' });
+    if (!phoneNumber.startsWith('+60')) {
+      return res.status(400).json({ error: 'Phone number must start with +60' });
     }
 
     // Send message to the user

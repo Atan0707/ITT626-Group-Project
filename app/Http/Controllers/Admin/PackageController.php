@@ -122,7 +122,7 @@ class PackageController extends Controller
         try {
             $this->telegramService->sendPackageNotification($package);
         } catch (\Exception $e) {
-            \Log::error('Failed to send Telegram notification: ' . $e->getMessage());
+            Log::error('Failed to send Telegram notification: ' . $e->getMessage());
             // Continue execution even if notification fails
         }
 
