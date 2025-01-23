@@ -38,7 +38,10 @@
                             @endif
                         </h5>
                     </div>
-                    <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">Add New Parcel</a>
+                    <div class="btn-group">
+                        <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">Add Single Parcel</a>
+                        <a href="{{ route('admin.packages.bulk-create') }}" class="btn btn-success">Add Multiple Parcels</a>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if(session('success'))

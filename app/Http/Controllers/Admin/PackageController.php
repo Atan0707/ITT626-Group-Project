@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PackageController extends Controller
 {
@@ -210,5 +211,70 @@ class PackageController extends Controller
     public function calendarEvents()
     {
         return response()->json([]);
+    }
+
+    public function bulkCreate()
+    {
+        return view('admin.packages.bulk-create');
+    }
+
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'packages' => 'required|array|min:1',
+            'packages.*.tracking_number' => 'required|string|distinct|unique:packages,tracking_number',
+            'packages.*.name' => 'required|string',
+            'packages.*.phone_number' => 'required|string',
+            'packages.*.delivery_date' => 'required|date',
+        ]);
+
+        $successCount = 0;
+        $errors = [];
+
+        \DB::transaction(function () use ($request, &$successCount, &$errors) {
+            foreach ($request->packages as $index => $packageData) {
+                try {
+                    // Get next daily number for the delivery date
+                    $deliveryDate = \Carbon\Carbon::parse($packageData['delivery_date'])->format('Y-m-d');
+                    $maxDailyNumber = Package::whereDate('delivery_date', $deliveryDate)
+                        ->max('daily_number') ?? 0;
+                    $dailyNumber = $maxDailyNumber + 1;
+
+                    // Create package
+                    $package = Package::create([
+                        'tracking_number' => $packageData['tracking_number'],
+                        'name' => $packageData['name'],
+                        'phone_number' => $packageData['phone_number'],
+                        'delivery_date' => $packageData['delivery_date'],
+                        'daily_number' => $dailyNumber
+                    ]);
+
+                    // Send Telegram notification
+                    try {
+                        $this->telegramService->sendPackageNotification($package);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send Telegram notification for package #' . $dailyNumber . ': ' . $e->getMessage());
+                    }
+
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errors[] = "Error processing package " . ($index + 1) . ": " . $e->getMessage();
+                }
+            }
+        });
+
+        if ($successCount > 0) {
+            $message = $successCount . ' package(s) added successfully.';
+            if (!empty($errors)) {
+                $message .= ' However, there were some errors: ' . implode(', ', $errors);
+                return redirect()->route('admin.packages.bulk-create')
+                    ->with('warning', $message);
+            }
+            return redirect()->route('admin.packages.index')
+                ->with('success', $message);
+        }
+
+        return redirect()->route('admin.packages.bulk-create')
+            ->with('error', 'Failed to add packages. ' . implode(', ', $errors));
     }
 }
