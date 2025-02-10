@@ -10,6 +10,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Mark discarded packages before getting stats
+        Package::markDiscardedPackages();
+
+        // Get statistics
         $stats = [
             'total_packages' => Package::count(),
             'pending_packages' => Package::where('status', 'pending')->count(),
@@ -17,7 +21,8 @@ class DashboardController extends Controller
             'discarded_packages' => Package::where('status', 'discarded')->count(),
         ];
 
-        $recent_packages = Package::latest()
+        // Get recent packages
+        $recent_packages = Package::orderBy('created_at', 'desc')
             ->take(10)
             ->get();
 

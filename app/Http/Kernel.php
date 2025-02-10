@@ -65,11 +65,13 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'staff' => \App\Http\Middleware\RedirectIfNotStaff::class,
     ];
 
-    protected $routeMiddleware = [
+    // Remove or comment out the deprecated $routeMiddleware
+    /*protected $routeMiddleware = [
         // ... other middlewares
         'staff' => \App\Http\Middleware\RedirectIfNotStaff::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
-    ];
+    ];*/
 }

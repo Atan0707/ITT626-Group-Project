@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\StaffLoginController;
 use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+use App\Http\Controllers\Staff\PackageController as StaffPackageController;
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -55,9 +56,23 @@ Route::prefix('staff')->name('staff.')->group(function () {
 });
 
 // Staff Protected Routes
-Route::middleware(['auth:staff'])->prefix('staff')->name('staff.')->group(function () {
+Route::middleware(['staff'])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('dashboard');
-    // Add other staff routes here
+    
+    // Package routes for staff
+    Route::get('/packages', [StaffPackageController::class, 'index'])->name('packages.index');
+    Route::get('/packages/create', [StaffPackageController::class, 'create'])->name('packages.create');
+    Route::post('/packages', [StaffPackageController::class, 'store'])->name('packages.store');
+    Route::get('/packages/{package}/edit', [StaffPackageController::class, 'edit'])->name('packages.edit');
+    Route::put('/packages/{package}', [StaffPackageController::class, 'update'])->name('packages.update');
+    Route::delete('/packages/{package}', [StaffPackageController::class, 'destroy'])->name('packages.destroy');
+    Route::get('/packages/calendar', [StaffPackageController::class, 'calendar'])->name('packages.calendar');
+    Route::get('/packages/calendar/events', [StaffPackageController::class, 'calendarEvents'])->name('packages.calendar.events');
+    Route::post('/packages/{package}/mark-collected', [StaffPackageController::class, 'markCollected'])->name('packages.mark-collected');
+    Route::get('/packages/bulk-create', [StaffPackageController::class, 'bulkCreate'])->name('packages.bulk-create');
+    Route::post('/packages/bulk-store', [StaffPackageController::class, 'bulkStore'])->name('packages.bulk-store');
+    Route::get('/packages/print/{date}', [StaffPackageController::class, 'printView'])->name('packages.print');
+    Route::post('/packages/{package}/send-reminder', [StaffPackageController::class, 'sendReminder'])->name('packages.send-reminder');
 });
 
 // Redirect root to login
