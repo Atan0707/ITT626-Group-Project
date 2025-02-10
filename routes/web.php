@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\ShopController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\StaffLoginController;
 use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
 
 // Authentication Routes
@@ -26,38 +27,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/packages/{package}/edit', [PackageController::class, 'edit'])->name('packages.edit');
     Route::put('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
     Route::delete('/packages/{package}', [PackageController::class, 'destroy'])->name('packages.destroy');
-    
-    // Add this new calendar route
     Route::get('/packages/calendar', [PackageController::class, 'calendar'])->name('packages.calendar');
-    
-    // Add this new route for marking packages as collected
-    Route::post('/packages/{package}/mark-collected', [PackageController::class, 'markCollected'])
-        ->name('packages.mark-collected');
-    
-    // Add these new bulk create routes
+    Route::get('/packages/calendar/events', [PackageController::class, 'calendarEvents'])->name('packages.calendar.events');
+    Route::post('/packages/{package}/mark-collected', [PackageController::class, 'markCollected'])->name('packages.mark-collected');
     Route::get('/packages/bulk-create', [PackageController::class, 'bulkCreate'])->name('packages.bulk-create');
     Route::post('/packages/bulk-store', [PackageController::class, 'bulkStore'])->name('packages.bulk-store');
+    Route::get('/packages/print/{date}', [PackageController::class, 'printView'])->name('packages.print');
     
     // Shops
-    Route::get('/shops', [ShopController::class, 'index'])->name('shops.index');
-    Route::get('/shops/create', [ShopController::class, 'create'])->name('shops.create');
-    Route::post('/shops', [ShopController::class, 'store'])->name('shops.store');
-    Route::get('/shops/{shop}/edit', [ShopController::class, 'edit'])->name('shops.edit');
-    Route::put('/shops/{shop}', [ShopController::class, 'update'])->name('shops.update');
-    Route::delete('/shops/{shop}', [ShopController::class, 'destroy'])->name('shops.destroy');
+    Route::resource('shops', ShopController::class);
 
-    // Staff Management Routes
-    Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
-    Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
-    Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
-    Route::get('/staff/{staff}/edit', [StaffController::class, 'edit'])->name('staff.edit');
-    Route::put('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
-    Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
-});
-
-// Redirect root to login
-Route::get('/', function () {
-    return redirect()->route('login');
+    // Staff Management
+    Route::resource('staff', StaffController::class);
 });
 
 // Staff Auth Routes
@@ -71,6 +52,11 @@ Route::prefix('staff')->name('staff.')->group(function () {
 Route::prefix('staff')->middleware('auth:staff')->name('staff.')->group(function () {
     Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
     // Add other staff routes here
+});
+
+// Redirect root to login
+Route::get('/', function () {
+    return redirect()->route('login');
 });
 
 // Redirect /home to admin dashboard

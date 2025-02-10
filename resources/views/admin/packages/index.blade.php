@@ -92,7 +92,7 @@
                                                 <div class="btn-group">
                                                     <a href="{{ route('admin.packages.edit', $item) }}" class="btn btn-sm btn-primary">Edit</a>
                                                     @if($item->status === 'pending')
-                                                        <form action="{{ route('admin.packages.mark-collected', $item) }}" method="POST" class="d-inline" onsubmit="sendCollectionMessage(event, '{{ $item->phone_number }}', '{{ $item->name }}', '{{ $item->tracking_number }}');">
+                                                        <form action="{{ route('admin.packages.mark-collected', $item) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             <button type="submit" class="btn btn-sm btn-success">Mark Collected</button>
                                                         </form>

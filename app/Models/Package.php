@@ -16,6 +16,7 @@ class Package extends Model
         'delivery_date',
         'daily_number',
         'status',
+        'shop_id',
     ];
 
     protected $casts = [
@@ -25,6 +26,14 @@ class Package extends Model
     ];
 
     /**
+     * Get the shop that owns the package
+     */
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
+    }
+
+    /**
      * Get the student that owns the package
      */
     public function student()
@@ -32,9 +41,9 @@ class Package extends Model
         return $this->belongsTo(User::class, 'student_id', 'student_id');
     }
 
-        /**
-         * Check if package has been collected
-         */
+    /**
+     * Check if package has been collected
+     */
     public function isCollected(): bool
     {
         return $this->status === 'collected';

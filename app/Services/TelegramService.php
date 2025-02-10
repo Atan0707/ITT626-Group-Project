@@ -28,7 +28,7 @@ class TelegramService
             $expiryDate = Carbon::now()->addWeek()->format('d/m/Y');
             $deliveryDate = Carbon::parse($package->delivery_date)->format('d/m/Y');
             
-            $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at Tanjung and is ready for pickup. Please show the reference number to the staff. \n\nReference number: **{$deliveryDate} #{$package->daily_number}** ";
+            $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at **{$package->shop->name}** and is ready for pickup. Please show the reference number to the staff. \n\nReference number: **{$deliveryDate} #{$package->daily_number}** ";
             $message .= "\n\nPlease collect it before **{$expiryDate}** to avoid the item being discarded. Thank you.";
 
             // Format phone number by adding +6 prefix if not already present
@@ -46,6 +46,31 @@ class TelegramService
             return $response->successful();
         } catch (Exception $e) {
             Log::error('Failed to send Telegram notification: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function sendCollectionNotification(Package $package)
+    {
+        try {
+            $collectionTime = Carbon::now()->format('d/m/Y h:i A');
+            $message = "Dear {$package->name},\n\nYour parcel with tracking number **{$package->tracking_number}** has been collected on **{$collectionTime}**.\n\nThank you for using our service!";
+
+            // Format phone number by adding +6 prefix if not already present
+            $phoneNumber = $package->phone_number;
+            if (!str_starts_with($phoneNumber, '+6')) {
+                $phoneNumber = '+6' . $phoneNumber;
+            }
+
+            // Make HTTP POST request to Node.js server
+            $response = Http::post('http://localhost:3000/receive-parcel', [
+                'phoneNumber' => $phoneNumber,
+                'message' => $message
+            ]);
+
+            return $response->successful();
+        } catch (Exception $e) {
+            Log::error('Failed to send collection notification: ' . $e->getMessage());
             return false;
         }
     }

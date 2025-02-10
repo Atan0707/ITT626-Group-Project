@@ -13,6 +13,22 @@
                         @csrf
 
                         <div class="mb-3">
+                            <label for="shop_id" class="form-label">Shop</label>
+                            <select class="form-select @error('shop_id') is-invalid @enderror" 
+                                id="shop_id" name="shop_id" required>
+                                <option value="">Select Shop</option>
+                                @foreach($shops as $shop)
+                                    <option value="{{ $shop->id }}" {{ old('shop_id') == $shop->id ? 'selected' : '' }}>
+                                        {{ $shop->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('shop_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <label for="tracking_number" class="form-label">Tracking Number</label>
                             <input type="text" class="form-control @error('tracking_number') is-invalid @enderror" 
                                 id="tracking_number" name="tracking_number" value="{{ old('tracking_number') }}" required>

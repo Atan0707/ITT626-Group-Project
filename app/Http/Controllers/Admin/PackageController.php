@@ -120,7 +120,8 @@ class PackageController extends Controller
     public function create()
     {
         $students = User::where('role', 'student')->get();
-        return view('admin.packages.create', compact('students'));
+        $shops = Shop::orderBy('name')->get();
+        return view('admin.packages.create', compact('students', 'shops'));
     }
 
     public function store(Request $request)
@@ -130,6 +131,7 @@ class PackageController extends Controller
             'name' => 'required|string',
             'phone_number' => 'required|string',
             'delivery_date' => 'required|date',
+            'shop_id' => 'required|exists:shops,id',
         ]);
 
         // Get next daily number
@@ -181,14 +183,22 @@ class PackageController extends Controller
             ->with('success', 'Package deleted successfully.');
     }
 
-    public function markCollected(Package $package)
-    {
-        $package->update([
-            'status' => 'collected'
-        ]);
+public function markCollected(Package $package)
+{
+    $package->update([
+        'status' => 'collected'
+    ]);
 
-        return redirect()->back()->with('success', 'Package marked as collected successfully');
+    // Send collection notification
+    try {
+        $this->telegramService->sendCollectionNotification($package);
+    } catch (\Exception $e) {
+        Log::error('Failed to send collection notification: ' . $e->getMessage());
+        // Continue execution even if notification fails
     }
+
+    return redirect()->back()->with('success', 'Package marked as collected successfully.');
+}
 
     public function calendar()
     {
