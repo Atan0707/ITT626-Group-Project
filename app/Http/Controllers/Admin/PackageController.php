@@ -10,6 +10,7 @@ use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Shop;
+use Carbon\Carbon;
 
 class PackageController extends Controller
 {
@@ -182,59 +183,48 @@ class PackageController extends Controller
             ->with('success', 'Package deleted successfully.');
     }
 
-    public function markCollected(Package $package)
-    {
-        $package->markAsCollected();
+public function markCollected(Package $package)
+{
+    $package->update([
+        'status' => 'collected'
+    ]);
 
-        // Send collection notification
-        try {
-            $this->telegramService->sendCollectionNotification($package);
-        } catch (\Exception $e) {
-            Log::error('Failed to send collection notification: ' . $e->getMessage());
-            // Continue execution even if notification fails
-        }
-
-        return redirect()->back()->with('success', 'Package marked as collected successfully.');
+    // Send collection notification
+    try {
+        $this->telegramService->sendCollectionNotification($package);
+    } catch (\Exception $e) {
+        Log::error('Failed to send collection notification: ' . $e->getMessage());
+        // Continue execution even if notification fails
     }
 
-    public function calendar(Request $request)
+    return redirect()->back()->with('success', 'Package marked as collected successfully.');
+}
+
+    public function calendar()
     {
-        try {
-            $query = Package::selectRaw('delivery_date, COUNT(*) as count')
-                ->whereNotNull('delivery_date');
+        $months = [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
+        ];
 
-            // Set default month to current month
-            $selectedMonth = $request->month ?? now()->format('Y-m');
-            $date = \Carbon\Carbon::parse($selectedMonth);
-            $query->whereYear('delivery_date', $date->year)
-                  ->whereMonth('delivery_date', $date->month);
+        $packages = Package::orderBy('delivery_date')->get();
+        
+        // Group packages by month and year
+        $packagesByMonth = $packages->groupBy(function($package) {
+            return Carbon::parse($package->delivery_date)->format('Y-m');
+        });
 
-            $dates = $query->groupBy('delivery_date')
-                          ->orderBy('delivery_date', 'desc')
-                          ->get();
-
-            // Get list of months with packages for the dropdown
-            $months = Package::selectRaw('DATE_FORMAT(delivery_date, "%Y-%m") as month')
-                ->whereNotNull('delivery_date')
-                ->groupBy('month')
-                ->orderBy('month', 'desc')
-                ->get()
-                ->map(function($item) {
-                    $date = \Carbon\Carbon::parse($item->month);
-                    return [
-                        'value' => $date->format('Y-m'),
-                        'label' => $date->format('F Y')
-                    ];
-                });
-
-            return view('admin.packages.calendar', compact('dates', 'months', 'selectedMonth'));
-        } catch (\Exception $e) {
-            return view('admin.packages.calendar', [
-                'dates' => collect([]),
-                'months' => collect([]),
-                'selectedMonth' => null
-            ]);
-        }
+        return view('admin.packages.calendar', compact('packages', 'months', 'packagesByMonth'));
     }
 
     public function calendarEvents()
@@ -262,14 +252,6 @@ class PackageController extends Controller
 
     public function bulkStore(Request $request)
     {
-        $request->validate([
-            'packages' => 'required|array|min:1',
-            'packages.*.tracking_number' => 'required|string|distinct|unique:packages,tracking_number',
-            'packages.*.name' => 'required|string',
-            'packages.*.phone_number' => 'required|string',
-            'packages.*.delivery_date' => 'required|date',
-        ]);
-
         $successCount = 0;
         $errors = [];
         $dailyNumbers = [];
@@ -284,7 +266,7 @@ class PackageController extends Controller
                     $dailyNumber = $maxDailyNumber + 1;
 
                     // Create package
-                    $package = Package::create([
+                    Package::create([
                         'tracking_number' => $packageData['tracking_number'],
                         'name' => $packageData['name'],
                         'phone_number' => $packageData['phone_number'],
@@ -292,51 +274,19 @@ class PackageController extends Controller
                         'daily_number' => $dailyNumber
                     ]);
 
-                    // Store daily number for success message
-                    $dailyNumbers[] = [
-                        'date' => $deliveryDate,
-                        'number' => $dailyNumber,
-                        'tracking' => $packageData['tracking_number']
-                    ];
-
-                    // Send Telegram notification
-                    try {
-                        $this->telegramService->sendPackageNotification($package);
-                    } catch (\Exception $e) {
-                        Log::error('Failed to send Telegram notification for package #' . $dailyNumber . ': ' . $e->getMessage());
-                    }
-
                     $successCount++;
+                    $dailyNumbers[] = $dailyNumber;
                 } catch (\Exception $e) {
-                    $errors[] = "Error processing package " . ($index + 1) . ": " . $e->getMessage();
+                    $errors[] = "Row " . ($index + 1) . ": " . $e->getMessage();
                 }
             }
         });
 
-        if ($successCount > 0) {
-            // Group daily numbers by date
-            $groupedNumbers = collect($dailyNumbers)->groupBy('date')->map(function($items) {
-                return $items->map(function($item) {
-                    return "#{$item['number']} ({$item['tracking']})";
-                })->join(', ');
-            });
-
-            $message = $successCount . ' package(s) added successfully.<br><br>';
-            $message .= '<strong>Assigned Daily Numbers:</strong><br>';
-            foreach ($groupedNumbers as $date => $numbers) {
-                $message .= \Carbon\Carbon::parse($date)->format('d M Y') . ': ' . $numbers . '<br>';
-            }
-
-            if (!empty($errors)) {
-                $message .= '<br><strong>Errors:</strong><br>' . implode('<br>', $errors);
-                return redirect()->route('admin.packages.bulk-create')
-                    ->with('warning', $message);
-            }
-            return redirect()->route('admin.packages.index')
-                ->with('success', $message);
+        if (count($errors) > 0) {
+            return back()->withErrors($errors)->withInput();
         }
 
-        return redirect()->route('admin.packages.bulk-create')
-            ->with('error', 'Failed to add packages. ' . implode('<br>', $errors));
+        return redirect()->route('admin.packages.index')
+            ->with('success', "Successfully added {$successCount} packages.");
     }
 }
