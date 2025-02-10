@@ -73,14 +73,18 @@
 @endsection
 
 @push('scripts')
+@php
+    $defaultLat = old('latitude', $shop->latitude ?? '-6.200000');
+    $defaultLng = old('longitude', $shop->longitude ?? '106.816666');
+@endphp
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
 <script>
 let map, marker;
 
 function initMap() {
     const defaultLocation = {
-        lat: {{ old('latitude', $shop->latitude ?? '-6.200000') }}, 
-        lng: {{ old('longitude', $shop->longitude ?? '106.816666') }}
+        lat: parseFloat("{{ $defaultLat }}"),
+        lng: parseFloat("{{ $defaultLng }}")
     };
 
     map = new google.maps.Map(document.getElementById('map'), {

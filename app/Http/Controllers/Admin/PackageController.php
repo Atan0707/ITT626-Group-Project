@@ -119,7 +119,8 @@ class PackageController extends Controller
     public function create()
     {
         $students = User::where('role', 'student')->get();
-        return view('admin.packages.create', compact('students'));
+        $shops = Shop::orderBy('name')->get();
+        return view('admin.packages.create', compact('students', 'shops'));
     }
 
     public function store(Request $request)
@@ -129,6 +130,7 @@ class PackageController extends Controller
             'name' => 'required|string',
             'phone_number' => 'required|string',
             'delivery_date' => 'required|date',
+            'shop_id' => 'required|exists:shops,id',
         ]);
 
         // Get next daily number
