@@ -25,11 +25,11 @@ class TelegramService
     public function sendPackageNotification(Package $package)
     {
         try {
-            $expiryDate = Carbon::now()->addWeek()->format('d/m/Y');
+            $discardDate = $package->discard_date->format('d/m/Y');
             $deliveryDate = Carbon::parse($package->delivery_date)->format('d/m/Y');
             
             $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at **{$package->shop->name}** and is ready for pickup. Please show the reference number to the staff. \n\nReference number: **{$deliveryDate} #{$package->daily_number}** ";
-            $message .= "\n\nPlease collect it before **{$expiryDate}** to avoid the item being discarded. Thank you.";
+            $message .= "\n\nPlease collect it before **{$discardDate}** to avoid the item being discarded. Thank you.";
 
             // Format phone number by adding +6 prefix if not already present
             $phoneNumber = $package->phone_number;
