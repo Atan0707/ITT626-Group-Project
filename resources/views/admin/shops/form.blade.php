@@ -50,8 +50,9 @@
                         <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude', $shop->latitude ?? '') }}">
                         <input type="hidden" id="longitude" name="longitude" value="{{ old('longitude', $shop->longitude ?? '') }}">
 
-                        <div class="form-group">
+                        <div class="form-group mt-3">
                             <div class="custom-control custom-switch">
+                                <input type="hidden" name="is_active" value="0">
                                 <input type="checkbox" 
                                        class="custom-control-input" 
                                        id="is_active" 
@@ -62,7 +63,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary mt-3">Save</button>
                     </form>
                 </div>
             </div>

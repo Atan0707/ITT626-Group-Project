@@ -32,9 +32,9 @@ class Package extends Model
         return $this->belongsTo(User::class, 'student_id', 'student_id');
     }
 
-    /**
-     * Check if package has been collected
-     */
+        /**
+         * Check if package has been collected
+         */
     public function isCollected(): bool
     {
         return $this->status === 'collected';
