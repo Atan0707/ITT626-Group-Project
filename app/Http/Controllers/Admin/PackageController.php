@@ -146,16 +146,34 @@ class PackageController extends Controller
         $package = Package::create($validated);
 
         // Send Telegram notification
+        $notificationSuccess = true;
+        $notificationError = null;
         try {
-            $this->telegramService->sendPackageNotification($package);
+            $success = $this->telegramService->sendPackageNotification($package);
+            if (!$success) {
+                $notificationSuccess = false;
+                $notificationError = 'Failed to send Telegram notification. The phone number may not be registered on Telegram.';
+            }
         } catch (\Exception $e) {
+            $notificationSuccess = false;
+            $notificationError = 'Failed to send Telegram notification: ' . $e->getMessage();
             Log::error('Failed to send Telegram notification: ' . $e->getMessage());
-            // Continue execution even if notification fails
         }
 
-        return redirect()->route('admin.packages.index')
-            ->with('success', 'Package added. Please label the parcel by #' . $package->daily_number)
+        $message = 'Package added. Please label the parcel by #' . $package->daily_number;
+        if (!$notificationSuccess) {
+            $message .= "\n" . $notificationError;
+        }
+
+        $response = redirect()->route('admin.packages.index')
+            ->with('success', $message)
             ->with('dailyNumber', $package->daily_number);
+
+        if (!$notificationSuccess) {
+            $response->with('warning', $notificationError);
+        }
+
+        return $response;
     }
 
     public function edit(Package $package)
