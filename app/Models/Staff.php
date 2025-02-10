@@ -10,6 +10,8 @@ class Staff extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $guard = 'staff';
+
     protected $fillable = [
         'name',
         'username',
