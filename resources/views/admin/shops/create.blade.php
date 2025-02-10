@@ -72,13 +72,12 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
 <script>
 let map, marker;
+const defaultLocation = {
+    lat: parseFloat("{{ old('latitude', 3.140853) }}"),
+    lng: parseFloat("{{ old('longitude', 101.693207) }}")
+};
 
 function initMap() {
-    const defaultLocation = {
-        lat: {{ old('latitude', 3.140853) }},  // Default to Malaysia's approximate center
-        lng: {{ old('longitude', 101.693207) }}
-    };
-
     map = new google.maps.Map(document.getElementById('map'), {
         center: defaultLocation,
         zoom: 13
