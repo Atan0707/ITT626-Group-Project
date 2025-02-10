@@ -62,6 +62,7 @@
                                     <th>Name</th>
                                     <th>Phone Number</th>
                                     <th>Delivery Date</th>
+                                    <th>Discard Date</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -70,7 +71,7 @@
                                 @forelse($paginatedPackages as $item)
                                     @if(isset($item->is_date_header) && $item->is_date_header)
                                         <tr class="table-light">
-                                            <td colspan="7" class="fw-bold">
+                                            <td colspan="8" class="fw-bold">
                                                 {{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}
                                             </td>
                                         </tr>
@@ -81,6 +82,7 @@
                                             <td>{{ $item->name }}</td>
                                             <td>{{ $item->phone_number }}</td>
                                             <td>{{ \Carbon\Carbon::parse($item->delivery_date)->format('d M Y') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->delivery_date)->addWeek()->format('d M Y') }}</td>
                                             <td>
                                                 @if($item->status === 'pending')
                                                     <span class="badge bg-warning">Pending</span>
@@ -108,7 +110,7 @@
                                     @endif
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">
+                                        <td colspan="8" class="text-center">
                                             @if($filterDate)
                                                 No packages found for {{ $filterDate }}
                                             @else

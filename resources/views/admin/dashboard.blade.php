@@ -57,6 +57,7 @@
                                     <th>Name</th>
                                     <th>Phone Number</th>
                                     <th>Delivery Date</th>
+                                    <th>Discard Date</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -68,6 +69,7 @@
                                         <td>{{ $package->name }}</td>
                                         <td>{{ $package->phone_number }}</td>
                                         <td>{{ \Carbon\Carbon::parse($package->delivery_date)->format('d M Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($package->delivery_date)->addWeek()->format('d M Y') }}</td>
                                         <td>
                                             @if($package->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
