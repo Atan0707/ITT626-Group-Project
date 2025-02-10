@@ -13,7 +13,7 @@
                 <div class="mb-4">
                     <form action="{{ route('admin.packages.calendar') }}" method="GET" class="d-flex gap-2">
                         <select name="month" class="form-select" onchange="this.form.submit()">
-                            <!-- <option value=""></option> -->
+                            <option value="">Select Month</option>
                             @foreach($months as $month)
                                 <option value="{{ $month['value'] }}" {{ $selectedMonth == $month['value'] ? 'selected' : '' }}>
                                     {{ $month['label'] }}
