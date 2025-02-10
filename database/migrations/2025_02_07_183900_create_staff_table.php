@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('packages', function (Blueprint $table) {
+        Schema::create('staff', function (Blueprint $table) {
             $table->id();
-            $table->string('tracking_number')->unique();
             $table->string('name');
-            $table->string('phone_number');
-            $table->date('delivery_date')->useCurrent();
-            $table->integer('daily_number')->default(1);
-            $table->enum('status', ['pending', 'collected'])->default('pending');
+            $table->string('email')->unique();
+            $table->string('phone_number')->nullable();
+            $table->foreignId('shop_id')->constrained()->onDelete('cascade');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('packages');
+        Schema::dropIfExists('staff');
     }
 };

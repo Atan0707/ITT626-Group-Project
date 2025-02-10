@@ -129,16 +129,7 @@ class PackageController extends Controller
             'name' => 'required|string',
             'phone_number' => 'required|string',
             'delivery_date' => 'required|date',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
         ]);
-
-        // Find nearest shop
-        $nearestShop = Shop::findNearestShop($validated['latitude'], $validated['longitude']);
-        
-        if ($nearestShop) {
-            $validated['shop_id'] = $nearestShop->id;
-        }
 
         // Get next daily number
         $deliveryDate = \Carbon\Carbon::parse($validated['delivery_date'])->format('Y-m-d');

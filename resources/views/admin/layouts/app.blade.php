@@ -179,6 +179,11 @@
                                     <i class="fas fa-store"></i> Manage Shops
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ Request::is('admin/staff*') ? 'active' : '' }}" href="{{ route('admin.staff.index') }}">
+                                    <i class="fas fa-users"></i> Manage Staff
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </nav>
