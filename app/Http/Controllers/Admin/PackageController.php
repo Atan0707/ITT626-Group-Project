@@ -200,9 +200,12 @@ public function markCollected(Package $package)
     return redirect()->back()->with('success', 'Package marked as collected successfully.');
 }
 
-    public function calendar()
+    public function calendar(Request $request)
     {
-        $months = [
+        $selectedMonth = $request->get('month');
+        
+        // Format months for dropdown
+        $months = collect([
             1 => 'January',
             2 => 'February',
             3 => 'March',
@@ -215,16 +218,26 @@ public function markCollected(Package $package)
             10 => 'October',
             11 => 'November',
             12 => 'December'
-        ];
+        ])->map(function ($label, $number) {
+            return [
+                'value' => date('Y-') . str_pad($number, 2, '0', STR_PAD_LEFT),
+                'label' => $label . ' ' . date('Y')
+            ];
+        })->values()->all();
 
-        $packages = Package::orderBy('delivery_date')->get();
-        
-        // Group packages by month and year
-        $packagesByMonth = $packages->groupBy(function($package) {
-            return Carbon::parse($package->delivery_date)->format('Y-m');
-        });
+        // Query to get dates with package counts
+        $query = Package::query();
+        if ($selectedMonth) {
+            $query->whereYear('delivery_date', substr($selectedMonth, 0, 4))
+                  ->whereMonth('delivery_date', substr($selectedMonth, 5, 2));
+        }
 
-        return view('admin.packages.calendar', compact('packages', 'months', 'packagesByMonth'));
+        $dates = $query->select('delivery_date', DB::raw('count(*) as count'))
+                      ->groupBy('delivery_date')
+                      ->orderBy('delivery_date')
+                      ->get();
+
+        return view('admin.packages.calendar', compact('months', 'dates', 'selectedMonth'));
     }
 
     public function calendarEvents()
