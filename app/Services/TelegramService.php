@@ -88,7 +88,7 @@ class TelegramService
             }
 
             // Make HTTP POST request to Node.js server
-            $response = Http::post('http://localhost:3000/receive-parcel', [
+            $response = Http::post('http://167.99.77.31:3001/receive-parcel', [
                 'phoneNumber' => $phoneNumber,
                 'message' => $message
             ]);
@@ -96,6 +96,31 @@ class TelegramService
             return $response->successful();
         } catch (Exception $e) {
             Log::error('Failed to send discard notification: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function sendReminderNotification(Package $package)
+    {
+        try {
+            $discardDate = $package->discard_date->format('d/m/Y');
+            $message = "Dear {$package->name},\n\nThis is a reminder that your parcel **{$package->tracking_number}** is still waiting for collection at **{$package->shop->name}**.\n\nPlease collect it before **{$discardDate}** to avoid the item being discarded.\n\nReference number: **{$package->delivery_date->format('d/m/Y')} #{$package->daily_number}**\n\nThank you.";
+
+            // Format phone number by adding +6 prefix if not already present
+            $phoneNumber = $package->phone_number;
+            if (!str_starts_with($phoneNumber, '+6')) {
+                $phoneNumber = '+6' . $phoneNumber;
+            }
+
+            // Make HTTP POST request to Node.js server
+            $response = Http::post('http://167.99.77.31:3001/receive-parcel', [
+                'phoneNumber' => $phoneNumber,
+                'message' => $message
+            ]);
+
+            return $response->successful();
+        } catch (Exception $e) {
+            Log::error('Failed to send reminder notification: ' . $e->getMessage());
             return false;
         }
     }
