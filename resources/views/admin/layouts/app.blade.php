@@ -165,15 +165,16 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/packages*') ? 'active' : '' }}" href="{{ route('admin.packages.index') }}">
+                                <a class="nav-link {{ Request::is('admin/packages*') && !Request::is('admin/packages/calendar*') ? 'active' : '' }}" href="{{ route('admin.packages.index') }}">
                                     <i class="fas fa-box"></i> View All Parcels
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/packages/calendar/view') ? 'active' : '' }}" href="{{ route('admin.packages.calendar') }}">
+                                <a class="nav-link {{ Request::is('admin/packages/calendar*') ? 'active' : '' }}" href="{{ route('admin.packages.calendar') }}">
                                     <i class="fas fa-calendar-alt"></i> View By Dates
                                 </a>
                             </li>
+                            @if(auth()->check() && auth()->user()->role === 'admin')
                             <li class="nav-item">
                                 <a class="nav-link {{ Request::is('admin/shops*') ? 'active' : '' }}" href="{{ route('admin.shops.index') }}">
                                     <i class="fas fa-store"></i> Manage Shops
@@ -184,6 +185,7 @@
                                     <i class="fas fa-users"></i> Manage Staff
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </div>
                 </nav>
