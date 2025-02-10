@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Package extends Model
 {
@@ -58,5 +59,15 @@ class Package extends Model
             'status' => 'collected',
             'collection_date' => now(),
         ]);
+    }
+
+    /**
+     * Get the discard date for the package
+     *
+     * @return string
+     */
+    public function getDiscardDateAttribute()
+    {
+        return Carbon::parse($this->delivery_date)->addWeek();
     }
 }
