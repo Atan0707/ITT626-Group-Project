@@ -250,12 +250,14 @@ class PackageController extends Controller
 
     public function bulkCreate()
     {
-        return view('admin.packages.bulk-create');
+        $shops = Shop::orderBy('name')->get();
+        return view('admin.packages.bulk-create', compact('shops'));
     }
 
     public function bulkStore(Request $request)
     {
         $request->validate([
+            'shop_id' => 'required|exists:shops,id',
             'packages' => 'required|array|min:1',
             'packages.*.tracking_number' => 'required|string|distinct|unique:packages,tracking_number',
             'packages.*.name' => 'required|string',
@@ -282,7 +284,8 @@ class PackageController extends Controller
                         'name' => $packageData['name'],
                         'phone_number' => $packageData['phone_number'],
                         'delivery_date' => $packageData['delivery_date'],
-                        'daily_number' => $dailyNumber
+                        'daily_number' => $dailyNumber,
+                        'shop_id' => $request->shop_id
                     ]);
 
                     // Store daily number for success message
