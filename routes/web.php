@@ -37,8 +37,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Shops
     Route::resource('shops', ShopController::class);
 
-    // Staff Management
-    Route::resource('staff', StaffController::class);
+    // Staff Management Routes (explicit)
+    Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+    Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
+    Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+    Route::get('/staff/{staff}/edit', [StaffController::class, 'edit'])->name('staff.edit');
+    Route::put('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
+    Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
 });
 
 // Staff Auth Routes

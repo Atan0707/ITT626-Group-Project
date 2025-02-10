@@ -1,62 +1,73 @@
 @extends('admin.layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Staff Members</h3>
-                    <div class="card-tools">
-                        <a href="{{ route('admin.staff.create') }}" class="btn btn-primary">
-                            Add New Staff
-                        </a>
-                    </div>
+<div class="container">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2>Staff Management</h2>
+            <a href="{{ route('admin.staff.create') }}" class="btn btn-primary">Add New Staff</a>
+        </div>
+        
+        <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
                 </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
+            @endif
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Shop</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($staffMembers as $staff)
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Shop</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($staff as $member)
-                            <tr>
-                                <td>{{ $member->name }}</td>
-                                <td>{{ $member->email }}</td>
-                                <td>{{ $member->phone_number }}</td>
-                                <td>{{ $member->shop->name }}</td>
+                                <td>{{ $staff->name }}</td>
+                                <td>{{ $staff->email }}</td>
+                                <td>{{ $staff->phone_number }}</td>
+                                <td>{{ $staff->shop->name ?? 'N/A' }}</td>
                                 <td>
-                                    <span class="badge badge-{{ $member->is_active ? 'success' : 'danger' }}">
-                                        {{ $member->is_active ? 'Active' : 'Inactive' }}
+                                    <span class="badge {{ $staff->is_active ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $staff->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.staff.edit', $member) }}" class="btn btn-sm btn-info">
-                                        Edit
-                                    </a>
-                                    <form action="{{ route('admin.staff.destroy', $member) }}" 
-                                          method="POST" 
-                                          class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" 
-                                                onclick="return confirm('Are you sure?')">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('admin.staff.edit', $staff) }}" 
+                                           class="btn btn-sm btn-primary">Edit</a>
+                                           
+                                        <form action="{{ route('admin.staff.destroy', $staff) }}" 
+                                              method="POST" 
+                                              class="d-inline"
+                                              onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center">No staff members found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                @if(isset($staffMembers) && method_exists($staffMembers, 'links'))
+                    <div class="mt-4">
+                        {{ $staffMembers->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

@@ -11,16 +11,21 @@ class Shop extends Model
 
     protected $fillable = [
         'name',
-        'address',
-        'latitude',
-        'longitude',
+        'location',
+        'phone',
+        'email',
+        'description',
         'is_active'
     ];
 
     protected $casts = [
-        'latitude' => 'float',
-        'longitude' => 'float',
+        'is_active' => 'boolean'
     ];
+
+    public function staff()
+    {
+        return $this->hasMany(Staff::class);
+    }
 
     public function packages() {
         return $this->hasMany(Package::class);

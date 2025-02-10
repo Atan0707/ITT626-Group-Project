@@ -25,6 +25,10 @@ class Staff extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     public function shop()
     {
         return $this->belongsTo(Shop::class);
