@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('phone_number');
             $table->date('delivery_date')->useCurrent();
             $table->integer('daily_number')->default(1);
-            $table->enum('status', ['pending', 'collected'])->default('pending');
+            $table->enum('status', ['pending', 'collected', 'discarded'])->default('pending');
             $table->timestamps();
         });
     }
