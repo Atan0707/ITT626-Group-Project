@@ -182,12 +182,19 @@ class PackageController extends Controller
             ->with('success', 'Package deleted successfully.');
     }
 
-    public function markAsCollected(Package $package)
+    public function markCollected(Package $package)
     {
         $package->markAsCollected();
 
-        return redirect()->back()
-            ->with('success', 'Package marked as collected.');
+        // Send collection notification
+        try {
+            $this->telegramService->sendCollectionNotification($package);
+        } catch (\Exception $e) {
+            Log::error('Failed to send collection notification: ' . $e->getMessage());
+            // Continue execution even if notification fails
+        }
+
+        return redirect()->back()->with('success', 'Package marked as collected successfully.');
     }
 
     public function calendar(Request $request)
@@ -250,14 +257,12 @@ class PackageController extends Controller
 
     public function bulkCreate()
     {
-        $shops = Shop::orderBy('name')->get();
-        return view('admin.packages.bulk-create', compact('shops'));
+        return view('admin.packages.bulk-create');
     }
 
     public function bulkStore(Request $request)
     {
         $request->validate([
-            'shop_id' => 'required|exists:shops,id',
             'packages' => 'required|array|min:1',
             'packages.*.tracking_number' => 'required|string|distinct|unique:packages,tracking_number',
             'packages.*.name' => 'required|string',
@@ -284,8 +289,7 @@ class PackageController extends Controller
                         'name' => $packageData['name'],
                         'phone_number' => $packageData['phone_number'],
                         'delivery_date' => $packageData['delivery_date'],
-                        'daily_number' => $dailyNumber,
-                        'shop_id' => $request->shop_id
+                        'daily_number' => $dailyNumber
                     ]);
 
                     // Store daily number for success message
