@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Services\TelegramService;
 
 class Package extends Model
 {
@@ -69,5 +70,47 @@ class Package extends Model
     public function getDiscardDateAttribute()
     {
         return Carbon::parse($this->delivery_date)->addWeek();
+    }
+
+    /**
+     * Check if package should be marked as discarded
+     */
+    public function checkDiscardStatus(): void
+    {
+        if ($this->status === 'pending' && now()->isAfter($this->discard_date)) {
+            $this->update(['status' => 'discarded']);
+            
+            // Send discard notification
+            try {
+                app(TelegramService::class)->sendDiscardNotification($this);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send discard notification: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Get packages that should be marked as discarded
+     */
+    public static function markDiscardedPackages(): void
+    {
+        try {
+            $packagesToDiscard = static::where('status', 'pending')
+                ->where('delivery_date', '<=', now()->subWeek())
+                ->get();
+
+            foreach ($packagesToDiscard as $package) {
+                $package->update(['status' => 'discarded']);
+                
+                // Send discard notification
+                try {
+                    app(TelegramService::class)->sendDiscardNotification($package);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send discard notification for package ' . $package->id . ': ' . $e->getMessage());
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error marking packages as discarded: ' . $e->getMessage());
+        }
     }
 }

@@ -32,6 +32,14 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Discarded Packages</h5>
+                            <h2 class="card-text">{{ $stats['discarded_packages'] }}</h2>
+                        </div>
+                    </div>
+                </div>
                 <!-- <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body">
@@ -73,8 +81,10 @@
                                         <td>
                                             @if($package->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
-                                            @else
+                                            @elseif($package->status === 'collected')
                                                 <span class="badge bg-success">Collected</span>
+                                            @else
+                                                <span class="badge bg-danger">Discarded</span>
                                             @endif
                                         </td>
                                         <td>

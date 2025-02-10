@@ -86,8 +86,10 @@
                                             <td>
                                                 @if($item->status === 'pending')
                                                     <span class="badge bg-warning">Pending</span>
-                                                @else
+                                                @elseif($item->status === 'collected')
                                                     <span class="badge bg-success">Collected</span>
+                                                @else
+                                                    <span class="badge bg-danger">Discarded</span>
                                                 @endif
                                             </td>
                                             <td>

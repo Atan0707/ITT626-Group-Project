@@ -25,6 +25,9 @@ class PackageController extends Controller
 
     public function index(Request $request)
     {
+        // Mark discarded packages before displaying
+        Package::markDiscardedPackages();
+        
         $query = Package::query();
 
         // If date is provided, get all packages for that date without pagination
@@ -288,5 +291,13 @@ public function markCollected(Package $package)
 
         return redirect()->route('admin.packages.index')
             ->with('success', "Successfully added {$successCount} packages.");
+    }
+
+    public function dashboard()
+    {
+        // Mark discarded packages before displaying
+        Package::markDiscardedPackages();
+        
+        // ... rest of the existing dashboard method code
     }
 }
