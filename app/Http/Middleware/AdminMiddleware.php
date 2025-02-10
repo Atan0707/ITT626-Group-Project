@@ -4,17 +4,25 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
-            abort(403, 'Access denied. Admin access only.');
+        // Add this line for debugging
+        \Log::info('AdminMiddleware check', ['user' => Auth::user()]);
+
+        if (!Auth::check()) {
+            return redirect('/login');
+        }
+
+        if (Auth::user()->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->with('error', 'Unauthorized access.');
         }
 
         return $next($request);

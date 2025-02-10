@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,13 +24,6 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/home';
-
-    /**
      * Create a new controller instance.
      *
      * @return void
@@ -44,8 +38,7 @@ class LoginController extends Controller
      */
     public function username()
     {
-        $role = request()->input('role');
-        return $role === 'admin' ? 'email' : 'student_id';
+        return 'username';
     }
 
     /**
@@ -53,33 +46,26 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-        $this->validateLogin($request);
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        $credentials = $request->only($this->username(), 'password');
-        $role = $request->input('role');
-
-        // For admin login
-        if ($role === 'admin') {
-            if ($credentials['email'] === 'admin' && $credentials['password'] === 'root') {
-                $admin = \App\Models\User::where('role', 'admin')->first();
-                if ($admin) {
-                    Auth::login($admin);
-                    return $this->sendLoginResponse($request);
-                }
-            }
-            return $this->sendFailedLoginResponse($request);
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            
+            // Add this line for debugging
+            \Log::info('User authenticated successfully', ['user' => Auth::user()]);
+            
+            return redirect()->intended('/admin/dashboard');
         }
 
-        // For student login
-        if ($role === 'student') {
-            $credentials['role'] = 'student';
-            if ($this->attemptLogin($request)) {
-                return $this->sendLoginResponse($request);
-            }
-            return $this->sendFailedLoginResponse($request);
-        }
+        // Add this line for debugging
+        \Log::info('Login failed', ['username' => $request->username]);
 
-        return $this->sendFailedLoginResponse($request);
+        return back()->withErrors([
+            'username' => 'The provided credentials do not match our records.',
+        ])->withInput($request->except('password'));
     }
 
     /**
@@ -109,21 +95,45 @@ class LoginController extends Controller
      */
     protected function credentials(Request $request)
     {
-        $credentials = $request->only($this->username(), 'password');
-        if ($request->input('role') === 'student') {
-            $credentials['role'] = 'student';
-        }
-        return $credentials;
+        return $request->only($this->username(), 'password');
     }
 
     /**
      * Get the post register / login redirect path.
      */
-    public function redirectPath()
+    protected function redirectTo()
     {
-        if (Auth::user()->role === 'admin') {
-            return '/admin/dashboard';
+        return '/admin/dashboard';
+    }
+
+    // Override the authenticated method to redirect admin
+    protected function authenticated(Request $request, $user)
+    {
+        // For admin users
+        if ($request->input('login_type') === 'admin') {
+            return redirect()->route('admin.dashboard');
         }
-        return '/student/dashboard';
+        
+        // For staff users
+        if ($request->input('login_type') === 'staff') {
+            return redirect()->route('staff.dashboard');
+        }
+
+        // Fallback
+        return redirect('/admin/dashboard');
+    }
+
+    // Add logout method
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/login');
+    }
+
+    protected function loggedOut(Request $request)
+    {
+        return redirect('/login');
     }
 }

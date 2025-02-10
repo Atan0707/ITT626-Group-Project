@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use App\Models\Shop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class StaffController extends Controller
 {
@@ -17,7 +18,7 @@ class StaffController extends Controller
 
     public function create()
     {
-        $shops = Shop::where('is_active', true)->get();
+        $shops = Shop::all();
         return view('admin.staff.create', compact('shops'));
     }
 
@@ -25,21 +26,26 @@ class StaffController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:staff',
             'email' => 'required|email|unique:staff',
-            'phone_number' => 'nullable|string|max:20',
+            'password' => 'required|min:6',
+            'phone_number' => 'nullable|string',
             'shop_id' => 'required|exists:shops,id',
             'is_active' => 'boolean'
         ]);
 
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['is_active'] = $request->has('is_active');
+
         Staff::create($validated);
 
         return redirect()->route('admin.staff.index')
-            ->with('success', 'Staff member added successfully');
+            ->with('success', 'Staff member created successfully');
     }
 
     public function edit(Staff $staff)
     {
-        $shops = Shop::where('is_active', true)->get();
+        $shops = Shop::all();
         return view('admin.staff.edit', compact('staff', 'shops'));
     }
 
@@ -47,11 +53,18 @@ class StaffController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:staff,username,' . $staff->id,
             'email' => 'required|email|unique:staff,email,' . $staff->id,
-            'phone_number' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string',
             'shop_id' => 'required|exists:shops,id',
             'is_active' => 'boolean'
         ]);
+
+        if ($request->filled('password')) {
+            $validated['password'] = Hash::make($request->password);
+        }
+
+        $validated['is_active'] = $request->has('is_active');
 
         $staff->update($validated);
 
