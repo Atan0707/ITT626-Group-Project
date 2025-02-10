@@ -52,20 +52,18 @@ class StaffController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:staff',
+                'name' => 'required|string|max:255|unique:staff',
                 'email' => 'required|email|unique:staff',
                 'password' => 'required|min:4',
                 'phone_number' => 'nullable|string',
                 'shop_id' => 'required|exists:shops,id',
             ]);
 
-            // Debug log before creating staff
-            \Log::info('Creating new staff member', $validated);
+            \Log::info('Creating staff member', ['name' => $validated['name']]);
 
             $staff = Staff::create([
                 'name' => $validated['name'],
-                'username' => $validated['username'],
+                'username' => $validated['name'], // You can use name as username too
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'phone_number' => $validated['phone_number'],
@@ -73,7 +71,6 @@ class StaffController extends Controller
                 'is_active' => $request->has('is_active')
             ]);
 
-            // Debug log after creating staff
             \Log::info('Staff member created', ['staff_id' => $staff->id]);
 
             return redirect()->route('admin.staff.index')

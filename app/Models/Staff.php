@@ -31,6 +31,16 @@ class Staff extends Authenticatable
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Get the login username to be used by the controller.
+     *
+     * @return string
+     */
+    public function username()
+    {
+        return 'name';
+    }
+
     public function shop()
     {
         return $this->belongsTo(Shop::class);
