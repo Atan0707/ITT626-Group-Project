@@ -146,16 +146,34 @@ class PackageController extends Controller
         $package = Package::create($validated);
 
         // Send Telegram notification
+        $notificationSuccess = true;
+        $notificationError = null;
         try {
-            $this->telegramService->sendPackageNotification($package);
+            $success = $this->telegramService->sendPackageNotification($package);
+            if (!$success) {
+                $notificationSuccess = false;
+                $notificationError = 'Failed to send Telegram notification. The phone number may not be registered on Telegram.';
+            }
         } catch (\Exception $e) {
+            $notificationSuccess = false;
+            $notificationError = 'Failed to send Telegram notification: ' . $e->getMessage();
             Log::error('Failed to send Telegram notification: ' . $e->getMessage());
-            // Continue execution even if notification fails
         }
 
-        return redirect()->route('admin.packages.index')
-            ->with('success', 'Package added. Please label the parcel by #' . $package->daily_number)
+        $message = 'Package added. Please label the parcel by #' . $package->daily_number;
+        if (!$notificationSuccess) {
+            $message .= "\n" . $notificationError;
+        }
+
+        $response = redirect()->route('admin.packages.index')
+            ->with('success', $message)
             ->with('dailyNumber', $package->daily_number);
+
+        if (!$notificationSuccess) {
+            $response->with('warning', $notificationError);
+        }
+
+        return $response;
     }
 
     public function edit(Package $package)
@@ -203,31 +221,33 @@ public function markCollected(Package $package)
     return redirect()->back()->with('success', 'Package marked as collected successfully.');
 }
 
-    public function calendar()
+    public function calendar(Request $request)
     {
-        $months = [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December'
-        ];
-
-        $packages = Package::orderBy('delivery_date')->get();
+        $selectedMonth = $request->get('month');
         
-        // Group packages by month and year
-        $packagesByMonth = $packages->groupBy(function($package) {
-            return Carbon::parse($package->delivery_date)->format('Y-m');
-        });
+        // Format months for dropdown
+        $months = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $date = Carbon::create(null, $i, 1);
+            $months[] = [
+                'value' => $date->format('Y-m'),
+                'label' => $date->format('F Y')
+            ];
+        }
 
-        return view('admin.packages.calendar', compact('packages', 'months', 'packagesByMonth'));
+        // Query to get dates with package counts
+        $query = Package::query();
+        if ($selectedMonth) {
+            $query->whereYear('delivery_date', substr($selectedMonth, 0, 4))
+                  ->whereMonth('delivery_date', substr($selectedMonth, 5, 2));
+        }
+
+        $dates = $query->select('delivery_date', DB::raw('count(*) as count'))
+                      ->groupBy('delivery_date')
+                      ->orderBy('delivery_date')
+                      ->get();
+
+        return view('admin.packages.calendar', compact('months', 'dates', 'selectedMonth'));
     }
 
     public function calendarEvents()
@@ -299,5 +319,22 @@ public function markCollected(Package $package)
         Package::markDiscardedPackages();
         
         // ... rest of the existing dashboard method code
+    }
+
+    public function sendReminder(Package $package)
+    {
+        if ($package->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Can only send reminders for pending packages'
+            ]);
+        }
+
+        $success = $this->telegramService->sendReminderNotification($package);
+
+        return response()->json([
+            'success' => $success,
+            'message' => $success ? 'Reminder sent successfully' : 'Failed to send reminder'
+        ]);
     }
 }

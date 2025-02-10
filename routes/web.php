@@ -33,6 +33,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/packages/bulk-create', [PackageController::class, 'bulkCreate'])->name('packages.bulk-create');
     Route::post('/packages/bulk-store', [PackageController::class, 'bulkStore'])->name('packages.bulk-store');
     Route::get('/packages/print/{date}', [PackageController::class, 'printView'])->name('packages.print');
+    Route::post('/packages/{package}/send-reminder', [PackageController::class, 'sendReminder'])->name('packages.send-reminder');
     
     // Shops
     Route::resource('shops', ShopController::class);
