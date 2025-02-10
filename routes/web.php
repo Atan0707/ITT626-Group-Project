@@ -54,8 +54,8 @@ Route::prefix('staff')->name('staff.')->group(function () {
 });
 
 // Staff Protected Routes
-Route::prefix('staff')->middleware('auth:staff')->name('staff.')->group(function () {
-    Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth:staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('dashboard');
     // Add other staff routes here
 });
 

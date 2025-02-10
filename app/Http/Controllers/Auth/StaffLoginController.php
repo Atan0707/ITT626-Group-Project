@@ -21,16 +21,25 @@ class StaffLoginController extends Controller
 
     public function login(Request $request)
     {
+        // Add debug logging
+        \Log::info('Staff login attempt started', ['name' => $request->name]);
+
         // Validate the form data
         $this->validate($request, [
             'name' => 'required|string',
-            'password' => 'required|min:6'
+            'password' => 'required'
         ]);
 
         // Check if staff exists and is active
         $staff = Staff::where('name', $request->name)
                      ->where('is_active', true)
                      ->first();
+
+        \Log::info('Staff lookup result', [
+            'name' => $request->name,
+            'found' => $staff ? 'yes' : 'no',
+            'active' => $staff ? $staff->is_active : 'n/a'
+        ]);
 
         if (!$staff) {
             return back()
@@ -39,14 +48,22 @@ class StaffLoginController extends Controller
         }
 
         // Attempt to log the staff in
-        if (Auth::guard('staff')->attempt([
+        $credentials = [
             'name' => $request->name,
             'password' => $request->password,
             'is_active' => 1
-        ])) {
-            // If successful, redirect to staff dashboard
-            return redirect()->intended(route('staff.dashboard'));
+        ];
+
+        \Log::info('Attempting staff login with credentials', ['name' => $credentials['name']]);
+
+        if (Auth::guard('staff')->attempt($credentials)) {
+            \Log::info('Staff login successful', ['staff_id' => $staff->id]);
+            return redirect()->route('staff.dashboard');
         }
+
+        \Log::error('Staff login failed', [
+            'name' => $request->name
+        ]);
 
         // If unsuccessful, redirect back with input
         return back()
