@@ -38,7 +38,7 @@ class TelegramService
             }
 
             // Make HTTP POST request to Node.js server
-            $response = Http::post('http://localhost:3000/receive-parcel', [
+            $response = Http::post('http://167.99.77.31:3001/receive-parcel', [
                 'phoneNumber' => $phoneNumber,
                 'message' => $message
             ]);
@@ -63,7 +63,7 @@ class TelegramService
             }
 
             // Make HTTP POST request to Node.js server
-            $response = Http::post('http://localhost:3000/receive-parcel', [
+            $response = Http::post('http://167.99.77.31:3001/receive-parcel', [
                 'phoneNumber' => $phoneNumber,
                 'message' => $message
             ]);
