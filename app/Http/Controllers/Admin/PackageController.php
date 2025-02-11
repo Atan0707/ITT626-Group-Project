@@ -265,7 +265,7 @@ public function markCollected(Package $package)
         // Format the date for display
         $formattedDate = \Carbon\Carbon::parse($date)->format('d M Y');
 
-        return view('admin.packages.print', compact('packages', 'formattedDate'));
+        return view('admin.packages.print', compact('packages', 'formattedDate', 'date'));
     }
 
     public function bulkCreate()
