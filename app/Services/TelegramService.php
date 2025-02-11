@@ -25,10 +25,11 @@ class TelegramService
     public function sendPackageNotification(Package $package)
     {
         try {
-            $discardDate = $package->discard_date->format('d/m/Y');
-            $deliveryDate = Carbon::parse($package->delivery_date)->format('d/m/Y');
+            $deliveryDate = Carbon::parse($package->delivery_date);
+            $discardDate = $deliveryDate->copy()->addWeek()->format('d/m/Y');
+            $deliveryDateFormatted = $deliveryDate->format('d/m/Y');
             
-            $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at **{$package->shop->name}** and is ready for pickup. Please show the reference number to the staff. \n\nReference number: **{$deliveryDate} #{$package->daily_number}** ";
+            $message = "Hi {$package->name}. \n\nYour parcel **{$package->tracking_number}** has been received at **{$package->shop->name}** and is ready for pickup. Please show the reference number to the staff. \n\nReference number: **{$deliveryDateFormatted} #{$package->daily_number}** ";
             $message .= "\n\nPlease collect it before **{$discardDate}** to avoid the item being discarded. Thank you.";
 
             // Format phone number by adding +6 prefix if not already present
@@ -42,6 +43,10 @@ class TelegramService
                 'phoneNumber' => $phoneNumber,
                 'message' => $message
             ]);
+
+            if (!$response->successful()) {
+                Log::error('Failed to send Telegram notification. Response: ' . $response->body());
+            }
 
             return $response->successful();
         } catch (Exception $e) {

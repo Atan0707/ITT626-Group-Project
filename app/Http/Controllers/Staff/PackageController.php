@@ -10,6 +10,7 @@ use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class PackageController extends Controller
 {
@@ -59,26 +60,40 @@ class PackageController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            $package = DB::transaction(function () use ($validated, $request) {
                 // Get the last daily number for the delivery date
                 $lastDailyNumber = Package::whereDate('delivery_date', $validated['delivery_date'])
                     ->max('daily_number');
 
+                // Get the staff's shop_id
+                $shop_id = Auth::guard('staff')->user()->shop_id;
+
+                // Create the package
                 $package = Package::create([
                     'name' => $validated['name'],
                     'phone_number' => $validated['phone_number'],
                     'tracking_number' => $validated['tracking_number'],
                     'delivery_date' => $validated['delivery_date'],
                     'daily_number' => ($lastDailyNumber ?? 0) + 1,
-                    'status' => 'pending'
+                    'status' => 'pending',
+                    'shop_id' => $shop_id
                 ]);
 
-                // Send Telegram notification
-                $this->telegramService->sendPackageNotification($package);
+                return $package;
             });
 
+            // Send Telegram notification outside the transaction
+            try {
+                $this->telegramService->sendPackageNotification($package);
+            } catch (\Exception $e) {
+                Log::error('Failed to send Telegram notification: ' . $e->getMessage());
+                // Don't throw the error, just log it
+            }
+
             return redirect()->route('staff.packages.index')
-                ->with('success', 'Package created successfully.');
+                ->with('success', 'Package created successfully.')
+                ->with('dailyNumber', $package->daily_number);
+
         } catch (\Exception $e) {
             Log::error('Error creating package: ' . $e->getMessage());
             return back()->withInput()->withErrors(['error' => 'Failed to create package. ' . $e->getMessage()]);
