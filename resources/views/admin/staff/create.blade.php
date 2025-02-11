@@ -25,6 +25,7 @@
                     <label for="username" class="form-label">Username</label>
                     <input type="text" class="form-control @error('username') is-invalid @enderror" 
                         id="username" name="username" value="{{ old('username') }}" required>
+                    <small class="form-text text-muted">This will be used for staff login</small>
                     @error('username')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -43,6 +44,7 @@
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control @error('password') is-invalid @enderror" 
                         id="password" name="password" required>
+                    <small class="form-text text-muted">Minimum 4 characters</small>
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
