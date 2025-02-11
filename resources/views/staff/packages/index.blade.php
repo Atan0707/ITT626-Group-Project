@@ -106,20 +106,24 @@
                             <div class="header-title">
                                 <h5 class="mb-0">
                                     All Parcels
-                                    @if(request('date'))
+                                    @if(request('filter_date'))
                                         <span class="text-muted fs-6 ms-2">
-                                            Showing packages for {{ request('date') }}
+                                            Showing packages for {{ \Carbon\Carbon::parse(request('filter_date'))->format('d M Y') }}
                                             <a href="{{ route('staff.packages.index') }}" class="btn btn-sm btn-outline-secondary ms-2">
                                                 Clear filter
                                             </a>
-                                            <a href="{{ route('staff.packages.print', ['date' => request('date')]) }}" class="btn btn-sm btn-outline-primary ms-2" target="_blank">
+                                            <a href="{{ route('staff.packages.print', ['date' => request('filter_date')]) }}" class="btn btn-sm btn-outline-primary ms-2" target="_blank">
                                                 Print List
                                             </a>
                                         </span>
                                     @endif
                                 </h5>
                             </div>
-                            <div class="header-buttons">
+                            <div class="header-buttons d-flex gap-2 align-items-center">
+                                <form action="{{ route('staff.packages.index') }}" method="GET" class="d-flex gap-2">
+                                    <input type="date" name="filter_date" class="form-control form-control-sm" value="{{ request('filter_date') }}">
+                                    <button type="submit" class="btn btn-sm btn-secondary">Filter</button>
+                                </form>
                                 <a href="{{ route('staff.packages.create') }}" class="btn btn-primary">Add Single Parcel</a>
                                 <a href="{{ route('staff.packages.bulk-create') }}" class="btn btn-success">Add Multiple Parcels</a>
                             </div>

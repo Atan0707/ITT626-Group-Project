@@ -28,19 +28,20 @@ class PackageController extends Controller
         
         $query = Package::query();
 
-        // If date is provided, get all packages for that date without pagination
-        if ($request->has('date')) {
-            $query->whereDate('delivery_date', $request->date);
-            $packages = $query->orderBy('delivery_date', 'desc')
-                            ->orderBy('daily_number', 'asc')
-                            ->get();
-            return view('staff.packages.index', compact('packages'));
+        // Get only packages for the staff's shop
+        $query->where('shop_id', Auth::guard('staff')->user()->shop_id);
+
+        // If filter_date is provided, get all packages for that date
+        if ($request->has('filter_date')) {
+            $query->whereDate('delivery_date', $request->filter_date);
         }
 
-        // Default view with pagination
-        $packages = $query->orderBy('delivery_date', 'desc')
-                        ->orderBy('daily_number', 'asc')
-                        ->paginate(10);
+        // Order by delivery date and daily number
+        $query->orderBy('delivery_date', 'desc')
+              ->orderBy('daily_number', 'asc');
+
+        // Get the packages with pagination
+        $packages = $query->paginate(10)->withQueryString();
 
         return view('staff.packages.index', compact('packages'));
     }
@@ -136,9 +137,23 @@ class PackageController extends Controller
         }
     }
 
-    public function calendar()
+    public function calendar(Request $request)
     {
-        return view('staff.packages.calendar');
+        $query = Package::query()
+            ->where('shop_id', Auth::guard('staff')->user()->shop_id)
+            ->select('delivery_date', DB::raw('count(*) as count'))
+            ->groupBy('delivery_date');
+
+        // If month is selected, filter by that month
+        if ($request->has('month')) {
+            $month = $request->month;
+            $query->whereYear('delivery_date', substr($month, 0, 4))
+                  ->whereMonth('delivery_date', substr($month, 5, 2));
+        }
+
+        $dates = $query->orderBy('delivery_date', 'desc')->get();
+
+        return view('staff.packages.calendar', compact('dates'));
     }
 
     public function calendarEvents(Request $request)

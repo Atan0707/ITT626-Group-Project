@@ -7,203 +7,181 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Parcel Management System') }}</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
-    <!-- Calendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
+    <!-- Custom Styles -->
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        #app {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            width: 100%;
-        }
-        .main-content {
-            display: flex;
-            flex: 1;
-            width: 100%;
-            margin-top: 56px; /* Add margin for navbar */
-        }
+        /* Sidebar styles */
         #sidebar {
-            width: 250px;
+            min-width: 250px;
+            max-width: 250px;
+            min-height: 100vh;
             background: #343a40;
-            color: white;
-            min-height: calc(100vh - 56px);
-            position: fixed;
-            left: 0;
-            top: 56px;
-            overflow-y: auto;
-            z-index: 100;
+            color: #fff;
+            transition: all 0.3s;
         }
-        #sidebar .nav-link {
-            color: rgba(255,255,255,.75);
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin: 5px 15px;
+
+        #sidebar.active {
+            margin-left: -250px;
         }
-        #sidebar .nav-link:hover,
-        #sidebar .nav-link.active {
-            color: white;
-            background: rgba(255,255,255,.1);
+
+        #sidebar .sidebar-header {
+            padding: 20px;
+            background: #2c3136;
         }
-        #sidebar .nav-link i {
+
+        #sidebar ul.components {
+            padding: 20px 0;
+        }
+
+        #sidebar ul li a {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            display: block;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #sidebar ul li a:hover,
+        #sidebar ul li a.active {
+            background: #2c3136;
+        }
+
+        #sidebar ul li a i {
             margin-right: 10px;
         }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+        }
+
         #content {
-            flex: 1;
-            margin-left: 250px;
-            padding: 20px;
-            min-height: calc(100vh - 56px);
-            background: #f8f9fa;
+            width: 100%;
+            min-height: 100vh;
+            transition: all 0.3s;
         }
+
+        /* Navbar styles */
         .navbar {
-            height: 56px;
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: 0;
-            z-index: 1030;
-            background: white;
+            padding: 15px 10px;
+            background: #fff;
+            border: none;
+            border-radius: 0;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .container {
-            max-width: 100% !important;
-            margin-right: 0 !important;
-            margin-left: 0 !important;
-        }
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        }
-        #calendar {
-            background: white;
-            padding: 15px;
-            border-radius: 0.25rem;
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                margin-left: -250px;
+            }
+            #sidebar.active {
+                margin-left: 0;
+            }
+            #sidebarCollapse span {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/admin/dashboard') }}">
-                    {{ config('app.name', 'Parcel Management System') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3>Staff Dashboard</h3>
+            </div>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
+            <ul class="list-unstyled components">
+                <li>
+                    <a href="{{ route('staff.dashboard') }}" class="{{ Request::is('staff/dashboard') ? 'active' : '' }}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('staff.packages.index') }}" class="{{ Request::is('staff/packages*') && !Request::is('staff/packages/calendar*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i> View All Parcels
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('staff.packages.calendar') }}" class="{{ Request::is('staff/packages/calendar*') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i> View By Dates
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('staff.packages.create') }}" class="{{ Request::is('staff/packages/create') ? 'active' : '' }}">
+                        <i class="fas fa-plus"></i> Add New Parcel
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('staff.packages.bulk-create') }}" class="{{ Request::is('staff/packages/bulk-create') ? 'active' : '' }}">
+                        <i class="fas fa-upload"></i> Bulk Add Parcels
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-                    </ul>
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-dark">
+                        <i class="fas fa-bars"></i>
+                    </button>
 
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }}
+                                    {{ Auth::guard('staff')->user()->name }}
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                    <a class="dropdown-item" href="{{ route('staff.logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                        <i class="fas fa-sign-out-alt"></i> {{ __('Logout') }}
                                     </a>
 
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    <form id="logout-form" action="{{ route('staff.logout') }}" method="POST" class="d-none">
                                         @csrf
                                     </form>
                                 </div>
                             </li>
-                        @endguest
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        @auth
-            <div class="main-content">
-                <!-- Sidebar -->
-                <nav id="sidebar">
-                    <div class="p-4">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/packages*') ? 'active' : '' }}" href="{{ route('admin.packages.index') }}">
-                                    <i class="fas fa-box"></i> View All Parcels
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/packages/calendar/view') ? 'active' : '' }}" href="{{ route('admin.packages.calendar') }}">
-                                    <i class="fas fa-calendar-alt"></i> View By Dates
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/shops*') ? 'active' : '' }}" href="{{ route('admin.shops.index') }}">
-                                    <i class="fas fa-store"></i> Manage Shops
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/staff*') ? 'active' : '' }}" href="{{ route('admin.staff.index') }}">
-                                    <i class="fas fa-users"></i> Manage Staff
-                                </a>
-                            </li>
                         </ul>
                     </div>
-                </nav>
+                </div>
+            </nav>
 
-                <!-- Page Content -->
-                <main id="content">
-                    @yield('content')
-                </main>
-            </div>
-        @else
-            <main class="py-4">
+            <!-- Main Content -->
+            <div class="container-fluid py-4">
                 @yield('content')
-            </main>
-        @endauth
+            </div>
+        </div>
     </div>
 
-    <!-- Font Awesome -->
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <!-- Calendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle
+            document.getElementById('sidebarCollapse').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        });
+    </script>
+
     @stack('scripts')
 </body>
 </html>

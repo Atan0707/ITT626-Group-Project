@@ -1,15 +1,15 @@
 @extends('staff.layout_staff.app_staff')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
+<div class="container-fluid">
+    <div class="row">
         <div class="col-md-12">
             <h2 class="mb-4">Staff Dashboard</h2>
             
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary h-100 py-2">
+                    <div class="card border-left-primary shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-warning h-100 py-2">
+                    <div class="card border-left-warning shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success h-100 py-2">
+                    <div class="card border-left-success shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
@@ -60,7 +60,7 @@
                 </div>
 
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-danger h-100 py-2">
+                    <div class="card border-left-danger shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
@@ -78,7 +78,7 @@
             </div>
 
             <!-- Recent Packages -->
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Packages</h5>
                     <a href="{{ route('staff.packages.create') }}" class="btn btn-primary btn-sm">Add New Package</a>
