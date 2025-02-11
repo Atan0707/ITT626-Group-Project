@@ -28,10 +28,30 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control @error('username') is-invalid @enderror" 
+                                   id="username" name="username" value="{{ old('username', $staff->username) }}" required>
+                            <small class="form-text text-muted">This is used for staff login</small>
+                            @error('username')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
                             <label for="email">Email</label>
                             <input type="email" class="form-control @error('email') is-invalid @enderror" 
                                    id="email" name="email" value="{{ old('email', $staff->email) }}" required>
                             @error('email')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">New Password</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                   id="password" name="password">
+                            <small class="form-text text-muted">Leave blank to keep current password. Minimum 4 characters if changing.</small>
+                            @error('password')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                         </div>

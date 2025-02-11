@@ -22,30 +22,33 @@ class StaffLoginController extends Controller
 
     public function login(Request $request)
     {
-        // Add debug logging
-        \Log::info('Staff login attempt started');
-
-        // Temporarily bypass authentication and directly login as staff
-        $staff = \App\Models\Staff::first(); // Get the first staff member
-        
-        \Log::info('Staff lookup result', [
-            'found' => $staff ? 'yes' : 'no',
-            'staff_details' => $staff ? $staff->toArray() : null
+        // Validate the form data
+        $this->validate($request, [
+            'username' => 'required|string',
+            'password' => 'required',
         ]);
 
-        if ($staff) {
-            Auth::guard('staff')->login($staff);
-            \Log::info('Staff login successful', ['staff_id' => $staff->id]);
-            return redirect()->route('staff.dashboard');
+        // Attempt to log the staff member in
+        if (Auth::guard('staff')->attempt([
+            'username' => $request->username,
+            'password' => $request->password,
+            'is_active' => true
+        ], $request->remember)) {
+            // If successful, redirect to their intended location
+            return redirect()->intended(route('staff.dashboard'));
         }
 
-        \Log::error('No staff members found in database');
-        return back()->with('error', 'No staff members found in database. Please create a staff member first.');
+        // If unsuccessful, redirect back with input
+        return back()
+            ->withInput($request->only('username', 'remember'))
+            ->with('error', 'Invalid login credentials or account is inactive');
     }
 
     public function logout(Request $request)
     {
         Auth::guard('staff')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('staff.login');
     }
 } 
