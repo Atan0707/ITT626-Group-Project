@@ -16,7 +16,9 @@ class DefaultStaffSeeder extends Seeder
         if (!$shop) {
             $shop = Shop::create([
                 'name' => 'Tanjung UiTM Kampus Jasin',
-                'location' => 'UiTM Kampus Jasin',
+                'address' => 'UiTM Melaka Kampus Jasin, Jalan Lembah Kesang 1/1-2, Kampung Seri Mendapat, Merlimau, Malacca, Malaysia',
+                'latitude' => 2.2634771,  // UiTM Jasin's coordinates
+                'longitude' => 102.4510822,
                 'phone' => '0123456789',
                 'email' => 'tanjung@uitm.edu.my',
                 'description' => 'UiTM Kampus Jasin Branch',

@@ -74,10 +74,10 @@
 
 @push('scripts')
 @php
-    $defaultLat = old('latitude', $shop->latitude ?? '-6.200000');
-    $defaultLng = old('longitude', $shop->longitude ?? '106.816666');
+    $defaultLat = old('latitude', $shop->latitude ?? '2.188168');  // Malaysia's approximate latitude
+    $defaultLng = old('longitude', $shop->longitude ?? '102.2501');  // Malaysia's approximate longitude
 @endphp
-<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places"></script>
 <script>
 let map, marker;
 
